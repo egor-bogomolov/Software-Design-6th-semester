@@ -4,18 +4,19 @@ import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
 
-abstract class Command {
+sealed class Command {
     abstract fun evaluate(
             args : List<String> = emptyList(),
             input : InputStream = System.`in`,
             output : OutputStream = System.out,
-            error : OutputStream = System.err
+            error : OutputStream = System.err,
+            environment: Map<String,String>
     )
 
     companion object {
         fun getCommand(name: String): Command = commands[name] ?: ExternalCommand(name)
 
-        val commands = mapOf(
+        private val commands = mapOf(
                 "cat" to CatCommand,
                 "echo" to EchoCommand,
                 "wc" to WcCommand,
@@ -30,7 +31,8 @@ private object CatCommand : Command() {
             args: List<String>,
             input: InputStream,
             output: OutputStream,
-            error: OutputStream
+            error: OutputStream,
+            environment: Map<String,String>
     ) {
         if (args.isEmpty()) {
             input.copyTo(output)
@@ -47,7 +49,8 @@ private object EchoCommand : Command() {
             args: List<String>,
             input: InputStream,
             output: OutputStream,
-            error: OutputStream
+            error: OutputStream,
+            environment: Map<String,String>
     ) {
         output.writer().use {
             for (string in args) {
@@ -94,7 +97,8 @@ private object WcCommand : Command() {
             args: List<String>,
             input: InputStream,
             output: OutputStream,
-            error: OutputStream
+            error: OutputStream,
+            environment: Map<String,String>
     ) {
         when (args.size) {
             0 -> input
@@ -123,7 +127,8 @@ private object PwdCommand : Command() {
             args: List<String>,
             input: InputStream,
             output: OutputStream,
-            error: OutputStream
+            error: OutputStream,
+            environment: Map<String,String>
     ) {
         output.writer().appendln(System.getProperty("user.dir"))
     }
@@ -134,7 +139,8 @@ private object ExitCommand : Command() {
             args: List<String>,
             input: InputStream,
             output: OutputStream,
-            error: OutputStream
+            error: OutputStream,
+            environment: Map<String,String>
     ) {
         System.exit(0)
     }
@@ -145,16 +151,20 @@ private class ExternalCommand(val name: String) : Command() {
             args: List<String>,
             input: InputStream,
             output: OutputStream,
-            error: OutputStream
+            error: OutputStream,
+            environment: Map<String,String>
     ) {
-        val subProcess = ProcessBuilder(listOf(name) + args).start()
+        val subProcessBuilder = ProcessBuilder(listOf(name) + args)
+        subProcessBuilder.environment()?.putAll(environment)
+
+        val subProcess = subProcessBuilder.start()
         val subInput = subProcess.inputStream
         val subOutput = subProcess.outputStream
         val subError = subProcess.errorStream
+
         input.copyTo(subOutput)
         subProcess.waitFor()
         subInput.copyTo(output)
         subError.copyTo(error)
     }
-
 }
