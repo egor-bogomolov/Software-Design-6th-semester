@@ -1,5 +1,6 @@
-package ru.spbau.mit.aush.repl
+package ru.spbau.mit.aush
 
+import ru.spbau.mit.aush.ast.Environment
 import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
@@ -29,10 +30,10 @@ private object CatCommand : Command() {
             environment: Environment
     ) {
         if (args.isEmpty()) {
-            environment.input.copyTo(environment.output)
+            environment.io.input.copyTo(environment.io.output)
         } else {
             for (fileName in args) {
-                File(fileName).inputStream().copyTo(environment.output)
+                File(fileName).inputStream().copyTo(environment.io.output)
             }
         }
     }
@@ -43,11 +44,11 @@ private object EchoCommand : Command() {
             args: List<String>,
             environment: Environment
     ) {
-        environment.output.writer().use {
+        environment.io.output.writer().run {
             for (string in args) {
-                it.append(string)
+                append(string)
             }
-            it.appendln()
+            appendln()
         }
     }
 }
@@ -89,22 +90,22 @@ private object WcCommand : Command() {
             environment: Environment
     ) {
         when (args.size) {
-            0 -> environment.input
+            0 -> environment.io.input
                     .calculateStats()
-                    .toOutputStream(environment.output)
+                    .toOutputStream(environment.io.output)
             1 -> File(args[0])
                     .calculateStats()
-                    .toOutputStream(environment.output, args[0])
+                    .toOutputStream(environment.io.output, args[0])
             2 -> {
                 var total = Stats(0, 0, 0)
 
                 for (filename in args) {
                     val fileStats = File(filename).calculateStats()
-                    fileStats.toOutputStream(environment.output, filename)
+                    fileStats.toOutputStream(environment.io.output, filename)
                     total += fileStats
                 }
 
-                total.toOutputStream(environment.output, "total")
+                total.toOutputStream(environment.io.output, "total")
             }
         }
     }
@@ -115,16 +116,16 @@ private object PwdCommand : Command() {
             args: List<String>,
             environment: Environment
     ) {
-        environment.output.writer().appendln(System.getProperty("user.dir"))
+        environment.io.output.writer().appendln(System.getProperty("user.dir"))
     }
 }
 
-private object ExitCommand : Command() {
+object ExitCommand : Command() {
     override fun evaluate(
             args: List<String>,
             environment: Environment
     ) {
-        System.exit(0)
+
     }
 }
 
@@ -134,16 +135,16 @@ private class ExternalCommand(val name: String) : Command() {
             environment: Environment
     ) {
         val subProcessBuilder = ProcessBuilder(listOf(name) + args)
-        subProcessBuilder.environment()?.putAll(environment.variables)
+        subProcessBuilder.environment()?.putAll(environment.variables.data)
 
         val subProcess = subProcessBuilder.start()
         val subInput = subProcess.inputStream
         val subOutput = subProcess.outputStream
         val subError = subProcess.errorStream
 
-        environment.input.copyTo(subOutput)
+        environment.io.input.copyTo(subOutput)
         subProcess.waitFor()
-        subInput.copyTo(environment.output)
-        subError.copyTo(environment.error)
+        subInput.copyTo(environment.io.output)
+        subError.copyTo(environment.io.error)
     }
 }

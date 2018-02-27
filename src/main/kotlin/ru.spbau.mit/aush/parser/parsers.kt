@@ -1,9 +1,9 @@
 package ru.spbau.mit.aush.parser
 
+import ru.spbau.mit.aush.ast.*
 import ru.spbau.mit.aush.lexer.Command
 import ru.spbau.mit.aush.lexer.Word
 import ru.spbau.mit.aush.lexer.WordPart
-import ru.spbau.mit.aush.repl.ReplState
 
 sealed class Parser<in F, out T> {
     abstract fun parse(input: F): T
@@ -34,7 +34,7 @@ object EnvironmentVariableParser : Parser<Word, Pair<String,Word>?>() {
     }
 }
 
-sealed class CommandParser(private val isSingle: Boolean) : Parser<Command, ASTNode>() {
+object CommandParser : Parser<Command, ASTNode>() {
     override fun parse(input: Command): ASTNode {
         val commandNameIndex =
                 input.words.indexOfFirst {
@@ -45,9 +45,8 @@ sealed class CommandParser(private val isSingle: Boolean) : Parser<Command, ASTN
                         .words
                         .take(commandNameIndex)
                         .map { EnvironmentVariableParser.parse(it)!! }
-        val tailNode: ASTNode = when {
-            isSingle && commandNameIndex == -1 -> ReplState.SubmitVariablesNode
-            commandNameIndex == -1 -> EmptyNode
+        val tailNode: ASTNode = when (commandNameIndex) {
+            -1 -> EmptyNode
             else -> CommandNode(
                     input.words[commandNameIndex],
                     input.words.drop(commandNameIndex + 1)
@@ -60,16 +59,13 @@ sealed class CommandParser(private val isSingle: Boolean) : Parser<Command, ASTN
     }
 }
 
-object PipedCommandParser : CommandParser(false)
-object SingleCommandParser : CommandParser(true)
-
 object CommandListParser : Parser<List<Command>, ASTNode>() {
     override fun parse(input: List<Command>): ASTNode {
-        return when (input.count()) {
-            0 -> EmptyNode
-            1 -> SingleCommandParser.parse(input.first())
-            else -> input
-                    .map { PipedCommandParser.parse(it) }
+        return if (input.isEmpty()) {
+            EmptyNode
+        } else {
+            input
+                    .map { CommandParser.parse(it) }
                     .reduceRight { command, tail -> PipeNode(command, tail) }
         }
     }

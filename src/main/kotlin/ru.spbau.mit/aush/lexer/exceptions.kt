@@ -2,8 +2,10 @@ package ru.spbau.mit.aush.lexer
 
 sealed class LexerException(message: String) : Exception(message)
 
-object UnclosedRawQuote : LexerException("pair raw quote not found")
-
-object UnclosedPlainQuote : LexerException("pair plain quote not found")
-
 object NoCommandAfterPipe : LexerException("missing command after pipe")
+
+abstract class UnclosedQuote(message: String) : LexerException(message)
+
+object UnclosedRawQuote : UnclosedQuote("pair raw quote not found")
+
+object UnclosedPlainQuote : UnclosedQuote("pair plain quote not found")

@@ -6,12 +6,6 @@ object Lexer {
     private const val PIPE = '|'
     private const val WS = ' '
 
-    abstract class LexResult
-
-    data class LexSuccess(val commands: List<Command>) : LexResult()
-
-    data class LexFailure(val exception: LexerException) : LexResult()
-
     private fun lex(text: String): List<Command> {
         val commands: MutableList<Command> = mutableListOf()
         val currentCommand: MutableList<Word> = mutableListOf()
