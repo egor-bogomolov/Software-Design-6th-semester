@@ -1,4 +1,4 @@
-package ru.spbau.mit.aush
+package ru.spbau.mit.aush.repl
 
 import java.io.File
 import java.io.InputStream
@@ -6,11 +6,8 @@ import java.io.OutputStream
 
 sealed class Command {
     abstract fun evaluate(
-            args : List<String> = emptyList(),
-            input : InputStream = System.`in`,
-            output : OutputStream = System.out,
-            error : OutputStream = System.err,
-            environment: Map<String,String>
+            args: List<String> = emptyList(),
+            environment: Environment
     )
 
     companion object {
@@ -29,16 +26,13 @@ sealed class Command {
 private object CatCommand : Command() {
     override fun evaluate(
             args: List<String>,
-            input: InputStream,
-            output: OutputStream,
-            error: OutputStream,
-            environment: Map<String,String>
+            environment: Environment
     ) {
         if (args.isEmpty()) {
-            input.copyTo(output)
+            environment.input.copyTo(environment.output)
         } else {
             for (fileName in args) {
-                File(fileName).inputStream().copyTo(output)
+                File(fileName).inputStream().copyTo(environment.output)
             }
         }
     }
@@ -47,12 +41,9 @@ private object CatCommand : Command() {
 private object EchoCommand : Command() {
     override fun evaluate(
             args: List<String>,
-            input: InputStream,
-            output: OutputStream,
-            error: OutputStream,
-            environment: Map<String,String>
+            environment: Environment
     ) {
-        output.writer().use {
+        environment.output.writer().use {
             for (string in args) {
                 it.append(string)
             }
@@ -95,28 +86,25 @@ private object WcCommand : Command() {
 
     override fun evaluate(
             args: List<String>,
-            input: InputStream,
-            output: OutputStream,
-            error: OutputStream,
-            environment: Map<String,String>
+            environment: Environment
     ) {
         when (args.size) {
-            0 -> input
+            0 -> environment.input
                     .calculateStats()
-                    .toOutputStream(output)
+                    .toOutputStream(environment.output)
             1 -> File(args[0])
                     .calculateStats()
-                    .toOutputStream(output, args[0])
+                    .toOutputStream(environment.output, args[0])
             2 -> {
                 var total = Stats(0, 0, 0)
 
                 for (filename in args) {
                     val fileStats = File(filename).calculateStats()
-                    fileStats.toOutputStream(output, filename)
+                    fileStats.toOutputStream(environment.output, filename)
                     total += fileStats
                 }
 
-                total.toOutputStream(output, "total")
+                total.toOutputStream(environment.output, "total")
             }
         }
     }
@@ -125,22 +113,16 @@ private object WcCommand : Command() {
 private object PwdCommand : Command() {
     override fun evaluate(
             args: List<String>,
-            input: InputStream,
-            output: OutputStream,
-            error: OutputStream,
-            environment: Map<String,String>
+            environment: Environment
     ) {
-        output.writer().appendln(System.getProperty("user.dir"))
+        environment.output.writer().appendln(System.getProperty("user.dir"))
     }
 }
 
 private object ExitCommand : Command() {
     override fun evaluate(
             args: List<String>,
-            input: InputStream,
-            output: OutputStream,
-            error: OutputStream,
-            environment: Map<String,String>
+            environment: Environment
     ) {
         System.exit(0)
     }
@@ -149,22 +131,19 @@ private object ExitCommand : Command() {
 private class ExternalCommand(val name: String) : Command() {
     override fun evaluate(
             args: List<String>,
-            input: InputStream,
-            output: OutputStream,
-            error: OutputStream,
-            environment: Map<String,String>
+            environment: Environment
     ) {
         val subProcessBuilder = ProcessBuilder(listOf(name) + args)
-        subProcessBuilder.environment()?.putAll(environment)
+        subProcessBuilder.environment()?.putAll(environment.variables)
 
         val subProcess = subProcessBuilder.start()
         val subInput = subProcess.inputStream
         val subOutput = subProcess.outputStream
         val subError = subProcess.errorStream
 
-        input.copyTo(subOutput)
+        environment.input.copyTo(subOutput)
         subProcess.waitFor()
-        subInput.copyTo(output)
-        subError.copyTo(error)
+        subInput.copyTo(environment.output)
+        subError.copyTo(environment.error)
     }
 }
