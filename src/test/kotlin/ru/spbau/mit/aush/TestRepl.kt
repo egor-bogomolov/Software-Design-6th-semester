@@ -1,6 +1,7 @@
 package ru.spbau.mit.aush
 
 import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream
+import ru.spbau.mit.aush.evaluation.EnvironmentIO
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

@@ -1,9 +1,9 @@
 package ru.spbau.mit.aush.commands
 
-import ru.spbau.mit.aush.Command
-import ru.spbau.mit.aush.Environment
-import ru.spbau.mit.aush.EnvironmentIO
-import ru.spbau.mit.aush.EnvironmentVariables
+import ru.spbau.mit.aush.evaluation.Command
+import ru.spbau.mit.aush.evaluation.Environment
+import ru.spbau.mit.aush.evaluation.EnvironmentIO
+import ru.spbau.mit.aush.evaluation.EnvironmentVariables
 import java.io.ByteArrayOutputStream
 import kotlin.test.assertEquals
 

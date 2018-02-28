@@ -1,8 +1,8 @@
 package ru.spbau.mit.aush.ast
 
-import ru.spbau.mit.aush.Environment
-import ru.spbau.mit.aush.EnvironmentIO
-import ru.spbau.mit.aush.EnvironmentVariables
+import ru.spbau.mit.aush.evaluation.Environment
+import ru.spbau.mit.aush.evaluation.EnvironmentIO
+import ru.spbau.mit.aush.evaluation.EnvironmentVariables
 import ru.spbau.mit.aush.lexer.Word
 import ru.spbau.mit.aush.lexer.WordPart
 import java.io.ByteArrayOutputStream

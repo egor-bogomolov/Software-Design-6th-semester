@@ -1,4 +1,4 @@
-package ru.spbau.mit.aush
+package ru.spbau.mit.aush.evaluation
 
 import java.io.File
 import java.io.InputStream

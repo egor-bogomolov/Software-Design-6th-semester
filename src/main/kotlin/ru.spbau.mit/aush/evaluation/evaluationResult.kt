@@ -1,7 +1,5 @@
 package ru.spbau.mit.aush.evaluation
 
-import ru.spbau.mit.aush.EnvironmentVariables
-
 /**
  * Represents result of command evaluation
  */

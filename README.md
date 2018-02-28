@@ -11,6 +11,8 @@
 
 ### Architectural notes
 
+![A bit simplified class diagram](diagram.png)
+
 Shell reads lines until Lexer can lex accumulated input.
 
 Simple grammar for lexer:
