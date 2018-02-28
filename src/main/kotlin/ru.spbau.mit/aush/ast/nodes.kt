@@ -1,6 +1,8 @@
 package ru.spbau.mit.aush.ast
 
 import ru.spbau.mit.aush.Command
+import ru.spbau.mit.aush.Environment
+import ru.spbau.mit.aush.EnvironmentVariables
 import ru.spbau.mit.aush.ExitCommand
 import ru.spbau.mit.aush.evaluation.*
 import ru.spbau.mit.aush.lexer.Word

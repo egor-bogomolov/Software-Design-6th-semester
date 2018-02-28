@@ -1,4 +1,4 @@
-package ru.spbau.mit.aush.ast
+package ru.spbau.mit.aush
 
 import java.io.InputStream
 import java.io.OutputStream

@@ -56,7 +56,12 @@ class Lexer private constructor(private val text: String) {
         var position = 0
         while (position < text.length) {
             when (text[position]) {
-                PIPE -> nextCommand()
+                PIPE -> {
+                    nextCommand()
+                    if (commands.isEmpty()) {
+                        throw NoCommandBeforePipe
+                    }
+                }
                 in WS -> nextWord()
                 RAW_QUOTE ->
                     position = processQuotedWordPart(RAW_QUOTE, position)

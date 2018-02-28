@@ -1,9 +1,7 @@
 package ru.spbau.mit.aush
 
-import ru.spbau.mit.aush.ast.Environment
 import java.io.File
 import java.io.InputStream
-import java.io.OutputStream
 import java.io.PrintStream
 import kotlin.concurrent.thread
 
@@ -55,8 +53,11 @@ private object CatCommand : Command() {
         if (args.isEmpty()) {
             environment.io.input.copyTo(environment.io.output)
         } else {
+            val printStream = PrintStream(environment.io.output)
+
             for (fileName in args) {
                 File(fileName).inputStream().copyTo(environment.io.output)
+                printStream.println()
             }
         }
     }
@@ -95,23 +96,22 @@ private object WcCommand : Command() {
                         bytes + other.bytes
                 )
 
-        fun toOutputStream(output: OutputStream, comment: String = "") =
-                output
-                        .writer()
-                        .append("\t$lines")
-                        .append("\t$words")
-                        .append("\t$bytes")
-                        .appendln(if (comment.isEmpty()) "" else "\t$comment")
+        fun toPrintStream(output: PrintStream, comment: String = "") {
+            output.print("\t$lines")
+            output.print("\t$words")
+            output.print("\t$bytes")
+            output.println(if (comment.isEmpty()) "" else "\t$comment")
+        }
     }
 
-    private fun InputStream.calculateStats(): Stats =
-            reader().readText().let {text ->
-                Stats(
-                        text.lines().size,
-                        text.split(' ', '\n', '\t').size,
-                        text.length
-                )
-            }
+    private fun InputStream.calculateStats(): Stats {
+        val lines = bufferedReader().readLines()
+        return Stats(
+                lines.size,
+                lines.sumBy { it.split(' ', '\t', '\n').size },
+                lines.sumBy { it.length }
+        )
+    }
 
     private fun File.calculateStats(): Stats = inputStream().calculateStats()
 
@@ -119,23 +119,25 @@ private object WcCommand : Command() {
             args: List<String>,
             environment: Environment
     ) {
+        val printStream = PrintStream(environment.io.output)
+
         when (args.size) {
             0 -> environment.io.input
                     .calculateStats()
-                    .toOutputStream(environment.io.output)
+                    .toPrintStream(printStream)
             1 -> File(args[0])
                     .calculateStats()
-                    .toOutputStream(environment.io.output, args[0])
+                    .toPrintStream(printStream, args[0])
             2 -> {
                 var total = Stats(0, 0, 0)
 
                 for (filename in args) {
                     val fileStats = File(filename).calculateStats()
-                    fileStats.toOutputStream(environment.io.output, filename)
+                    fileStats.toPrintStream(printStream, filename)
                     total += fileStats
                 }
 
-                total.toOutputStream(environment.io.output, "total")
+                total.toPrintStream(printStream, "total")
             }
         }
     }

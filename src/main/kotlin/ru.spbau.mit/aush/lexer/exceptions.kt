@@ -11,6 +11,11 @@ sealed class LexerException(message: String) : Exception(message)
 class LexerInternalException(message: String) : LexerException(message)
 
 /**
+ * Represents no input before pipe (`|`)
+ */
+object NoCommandBeforePipe : LexerException("missing command before pipe")
+
+/**
  * Represents no input after pipe (`|`)
  */
 object NoCommandAfterPipe : LexerException("missing command after pipe")

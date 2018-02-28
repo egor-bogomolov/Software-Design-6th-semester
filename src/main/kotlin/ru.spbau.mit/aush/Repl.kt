@@ -1,9 +1,6 @@
 package ru.spbau.mit.aush
 
 import ru.spbau.mit.aush.ast.ASTNode
-import ru.spbau.mit.aush.ast.Environment
-import ru.spbau.mit.aush.ast.EnvironmentIO
-import ru.spbau.mit.aush.ast.EnvironmentVariables
 import ru.spbau.mit.aush.evaluation.CommandEvaluationFailedException
 import ru.spbau.mit.aush.evaluation.EvaluationFailure
 import ru.spbau.mit.aush.evaluation.EvaluationSuccess

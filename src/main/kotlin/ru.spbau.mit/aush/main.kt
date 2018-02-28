@@ -1,7 +1,5 @@
 package ru.spbau.mit.aush
 
-import ru.spbau.mit.aush.ast.EnvironmentIO
-
 /**
  * Runs the REPL with System streams as its arguments
  */
