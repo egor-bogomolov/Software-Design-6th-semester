@@ -3,7 +3,7 @@ package ru.spbau.mit.aush.lexer
 /**
  *
  */
-data class Command(val words: List<Word>)
+data class LCommand(val words: List<Word>)
 
 data class Word(val parts: List<WordPart>)
 

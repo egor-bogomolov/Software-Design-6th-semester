@@ -37,13 +37,13 @@ class Repl(
         var commandsString = readLine() ?: return null
         var lexResult = Lexer.tryLex(commandsString)
         while (lexResult is LexFailure
-                && (lexResult.exception is UnclosedQuote
-                        || lexResult.exception == NoCommandAfterPipe)) {
+                && (lexResult.cause is UnclosedQuoteException
+                        || lexResult.cause == NoCommandAfterPipeException)) {
             commandsString += "\n" + readLine()
             lexResult = Lexer.tryLex(commandsString)
         }
         return when (lexResult) {
-            is LexFailure -> throw lexResult.exception
+            is LexFailure -> throw lexResult.cause
             is LexSuccess -> CommandListParser.parse(lexResult.commands)
         }
     }

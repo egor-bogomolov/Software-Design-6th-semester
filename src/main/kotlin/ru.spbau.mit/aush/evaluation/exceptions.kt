@@ -8,7 +8,7 @@ sealed class EvaluationException(
         cause: Throwable? = null) : Exception(message, cause)
 
 /**
- * Represents an exception in evaluation of a specific command
+ * Represents an cause in evaluation of a specific command
  */
 class CommandEvaluationFailedException(
         command: String,

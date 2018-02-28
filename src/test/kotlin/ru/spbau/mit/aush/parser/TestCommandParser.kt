@@ -68,6 +68,6 @@ class TestCommandParser {
                     assertEquals(it.first, CommandParser.parse(it.second))
                 }
 
-        assertEquals(EmptyNode, CommandParser.parse(Command(emptyList())))
+        assertEquals(EmptyNode, CommandParser.parse(LCommand(emptyList())))
     }
 }

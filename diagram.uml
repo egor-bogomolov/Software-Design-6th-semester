@@ -1,0 +1,203 @@
+@startuml
+
+class Exception {
+
+}
+
+package ru.spbau.mit.aush {
+
+    package ast {
+        abstract class ASTNode {
+            {abstract} +evaluate(environment: Environment): EvaluationResult
+        }
+
+        ASTNode <|-- CommandNode
+
+        class CommandNode {
+            -commandName: Word
+            -args: List<Word>
+            +evaluate(environment: Environment): EvaluationResult
+        }
+
+        ASTNode <|-- PipeNode
+
+        class PipeNode {
+            -left: ASTNode
+            -right: ASTNode
+            +evaluate(environment: Environment): EvaluationResult
+        }
+
+        ASTNode <|-- DefineVariableNode
+
+        class DefineVariableNode {
+            -name: String
+            -value: Word
+            -followingNode: ASTNode
+            +evaluate(environment: Environment): EvaluationResult
+        }
+
+        ASTNode <|-- EmptyNode
+
+        object EmptyNode {
+            {method} +evaluate(environment: Environment): EvaluationResult
+        }
+    }
+
+    package evaluation {
+        abstract class EvaluationResult
+
+        EvaluationResult <|-- EvaluationSuccess
+
+        class EvaluationSuccess {
+            +modifiedEnvironmentVariables: EnvironmentVariables
+        }
+
+        EvaluationResult <|-- SuccessfullyExited
+
+        object SuccessfullyExited {
+
+        }
+
+        EvaluationResult <|-- EvaluationFailure
+
+        class EvaluationFailure {
+            +command: String
+            +cause: Throwable
+        }
+
+        Exception <|-- EvaluationException
+
+        abstract class EvaluationException {
+            +message: String? = null
+            +cause: Throwable? = null
+        }
+
+        EvaluationException <|-- CommandEvaluationFailedException
+
+        class CommandEvaluationFailedException {
+            +command: String
+            +cause: Throwable
+        }
+    }
+
+
+    package lexer {
+        enum WordPartType {
+            PLAIN_QUOTED
+            RAW_QUOTED
+            UNQUOTED
+        }
+
+        class WordPart {
+            +string: String
+            +type: WordPartType
+        }
+
+        class Word {
+            +parts: List<WordPart>
+        }
+
+        class LCommand {
+            +words: List<Word>
+        }
+
+        Exception <|-- LexerException
+
+        abstract class LexerException {
+            +message: String
+        }
+
+        LexerException <|-- LexerInternalException
+
+        class LexerInternalException {
+            +message: String
+        }
+
+        LexerException <|-- NoCommandBeforePipeException
+
+        object NoCommandBeforePipeException {
+            +message: String = "missing command before pipe"
+        }
+
+        LexerException <|-- NoCommandAfterPipeException
+
+        object NoCommandAfterPipeException {
+            +message: String = "missing command after pipe"
+        }
+
+        LexerException <|-- UnclosedQuoteException
+
+        class UnclosedQuoteException {
+            +quote: Char
+            +message: String = "missing pair to a '$quote'-quote"
+        }
+
+        abstract class LexResult {
+
+        }
+
+        LexResult <|-- LexSuccess
+
+        class LexSuccess {
+            +commands: List<LCommand>
+        }
+
+        LexResult <|-- LexFailure
+
+        class LexFailure {
+            +cause: LexerException
+        }
+
+        class Lexer {
+            -text: String
+            -commands: MutableList<LCommand>
+            -currentCommand: MutableList<Word>
+            -currentWord: MutableList<WordPart>
+            -currentWordPart: String
+
+            {method} -nextWordPart(type: WordPartType)
+            {method} -nextWord()
+            {method} -nextCommand()
+            {method} -processQuotedWordPart(quote: Char, position: Int): Int
+            {method} -lex(): List<LCommand>
+        }
+
+        Lexer <--> LexerCompanion
+
+        object LexerCompanion {
+            -PLAIN_QUOTE: Char = '\"'
+            -RAW_QUOTE: Char = '\''
+            -PIPE: Char = '|'
+            -WS: String = "\\s\\n"
+
+            {method} +tryLex(text: String): LexResult 
+        }
+    }
+
+    package parser {
+        abstract class Parser<F, T> {
+            +abstract parse(input: F): T
+        }
+
+        Parser <|-- EnvironmentVariableParser
+
+        object EnvironmentVariableParser {
+            +parse(input: Word): Pair<String,Word>?
+        }
+
+        Parser <|-- CommandParser
+
+        object CommandParser {
+            +parse(input: LCommand): ASTNode
+        }
+
+        Parser <|-- CommandListParser
+        object CommandListParser {
+            +parse(input: List<LCommand>): ASTNode
+        }
+    }
+
+    
+}
+
+@enduml

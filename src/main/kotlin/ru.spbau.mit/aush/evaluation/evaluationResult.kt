@@ -21,7 +21,7 @@ class EvaluationSuccess(
 object SuccessfullyExited : EvaluationResult()
 
 /**
- * Represents evaluation failure due to an exception and
+ * Represents evaluation failure due to an cause and
  * contains command as a string
  * (after applying environment variable interpolation)
  * and failure cause

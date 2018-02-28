@@ -1,7 +1,7 @@
 package ru.spbau.mit.aush.parser
 
 import ru.spbau.mit.aush.ast.*
-import ru.spbau.mit.aush.lexer.Command
+import ru.spbau.mit.aush.lexer.LCommand
 import ru.spbau.mit.aush.lexer.Word
 import ru.spbau.mit.aush.lexer.WordPart
 
@@ -58,14 +58,14 @@ internal object EnvironmentVariableParser : Parser<Word, Pair<String,Word>?>() {
 /**
  * Represents a parser of a single command
  */
-internal object CommandParser : Parser<Command, ASTNode>() {
+internal object CommandParser : Parser<LCommand, ASTNode>() {
     /**
      * Parses input. Assumed command form is `envVar* commandName arg*`
      *
-     * @param input {@link ru.spbau.mit.aush.lexer.Command} to parse
+     * @param input {@link ru.spbau.mit.aush.lexer.LCommand} to parse
      * @return ASTNode representing the parsed command
      */
-    override fun parse(input: Command): ASTNode {
+    override fun parse(input: LCommand): ASTNode {
         val commandNameIndex =
                 input.words.indexOfFirst {
                     EnvironmentVariableParser.parse(it) == null
@@ -91,7 +91,7 @@ internal object CommandParser : Parser<Command, ASTNode>() {
 /**
  * Represents a parser for input after lexing
  */
-object CommandListParser : Parser<List<Command>, ASTNode>() {
+object CommandListParser : Parser<List<LCommand>, ASTNode>() {
     /**
      * Parser list of commands and converts it to AST.
      * Commands are piped in order they are in input list
@@ -99,7 +99,7 @@ object CommandListParser : Parser<List<Command>, ASTNode>() {
      * @param input list of lexed commands
      * @return AST representing input
      */
-    override fun parse(input: List<Command>): ASTNode {
+    override fun parse(input: List<LCommand>): ASTNode {
         return if (input.isEmpty()) {
             EmptyNode
         } else {

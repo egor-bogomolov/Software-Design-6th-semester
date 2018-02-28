@@ -6,7 +6,7 @@ package ru.spbau.mit.aush.lexer
  * (closed quotes, command after pipe)
  */
 class Lexer private constructor(private val text: String) {
-    private val commands: MutableList<Command> = mutableListOf()
+    private val commands: MutableList<LCommand> = mutableListOf()
     private val currentCommand: MutableList<Word> = mutableListOf()
     private val currentWord: MutableList<WordPart> = mutableListOf()
     private var currentWordPart = ""
@@ -29,7 +29,7 @@ class Lexer private constructor(private val text: String) {
     private fun nextCommand() {
         nextWord()
         if (currentCommand.isNotEmpty()) {
-            commands += Command(currentCommand.toList())
+            commands += LCommand(currentCommand.toList())
             currentCommand.clear()
         }
     }
@@ -44,7 +44,7 @@ class Lexer private constructor(private val text: String) {
 
         val closingQuoteIndex = text.indexOf(quote, position + 1)
         if (closingQuoteIndex == -1) {
-            throw UnclosedQuote(quote)
+            throw UnclosedQuoteException(quote)
         }
         currentWordPart = text.substring(position + 1, closingQuoteIndex)
         nextWordPart(type)
@@ -52,14 +52,14 @@ class Lexer private constructor(private val text: String) {
         return closingQuoteIndex
     }
 
-    private fun lex(): List<Command> {
+    private fun lex(): List<LCommand> {
         var position = 0
         while (position < text.length) {
             when (text[position]) {
                 PIPE -> {
                     nextCommand()
                     if (commands.isEmpty()) {
-                        throw NoCommandBeforePipe
+                        throw NoCommandBeforePipeException
                     }
                 }
                 in WS -> nextWord()
@@ -75,7 +75,7 @@ class Lexer private constructor(private val text: String) {
                 && currentCommand.isEmpty()
                 && currentWord.isEmpty()
                 && currentWordPart.isEmpty()) {
-            throw NoCommandAfterPipe
+            throw NoCommandAfterPipeException
         }
         nextCommand()
 

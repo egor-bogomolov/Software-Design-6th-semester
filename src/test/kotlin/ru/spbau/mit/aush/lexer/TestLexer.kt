@@ -21,7 +21,7 @@ class TestLexer {
         assertEquals(
                 LexSuccess(
                         listOf(
-                                Command(
+                                LCommand(
                                         listOf(
                                                 expectedWord
                                         )
@@ -49,7 +49,7 @@ class TestLexer {
         assertEquals(
                 LexSuccess(
                         listOf(
-                                Command(
+                                LCommand(
                                         expectedWords
                                 )
                         )
@@ -65,8 +65,8 @@ class TestLexer {
 
         val result = Lexer.tryLex(input)
         assert(result is LexFailure
-                && result.exception is UnclosedQuote
-                && result.exception.message == "missing pair to a '''-quote"
+                && result.cause is UnclosedQuoteException
+                && result.cause.message == "missing pair to a '''-quote"
         )
     }
 
@@ -78,8 +78,8 @@ class TestLexer {
 
         val result = Lexer.tryLex(input)
         assert(result is LexFailure
-                && result.exception is UnclosedQuote
-                && result.exception.message == "missing pair to a '\"'-quote"
+                && result.cause is UnclosedQuoteException
+                && result.cause.message == "missing pair to a '\"'-quote"
         )
     }
 
@@ -91,12 +91,12 @@ class TestLexer {
         val result = Lexer.tryLex(input)
         assertEquals(
                 LexSuccess(listOf(
-                        Command(listOf(
+                        LCommand(listOf(
                                 Word(listOf(
                                         WordPart("first", WordPart.Type.UNQUOTED)
                                 ))
                         )),
-                        Command(listOf(
+                        LCommand(listOf(
                                 Word(listOf(
                                         WordPart("second", WordPart.Type.UNQUOTED)
                                 ))
@@ -114,7 +114,7 @@ class TestLexer {
         val result = Lexer.tryLex(input)
         assertEquals(
                 LexFailure(
-                        NoCommandBeforePipe
+                        NoCommandBeforePipeException
                 ),
                 result
         )
@@ -128,7 +128,7 @@ class TestLexer {
         val result = Lexer.tryLex(input)
         assertEquals(
                 LexFailure(
-                        NoCommandAfterPipe
+                        NoCommandAfterPipeException
                 ),
                 result
         )
