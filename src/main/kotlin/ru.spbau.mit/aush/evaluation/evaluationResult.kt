@@ -11,5 +11,6 @@ class EvaluationSuccess(
 object SuccessfullyExited : EvaluationResult()
 
 class EvaluationFailure(
+        val command: String,
         val failureCause: Throwable
 ) : EvaluationResult()

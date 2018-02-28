@@ -4,7 +4,7 @@ object Lexer {
     private const val PLAIN_QUOTE = '\"'
     private const val RAW_QUOTE = '\''
     private const val PIPE = '|'
-    private const val WS = ' '
+    private const val WS = " \n"
 
     private fun lex(text: String): List<Command> {
         val commands: MutableList<Command> = mutableListOf()
@@ -20,17 +20,17 @@ object Lexer {
         }
 
         fun nextWord() {
+            nextWordPart()
             if (currentWord.isNotEmpty()) {
-                nextWordPart()
-                currentCommand += Word(currentWord)
+                currentCommand += Word(currentWord.toList())
                 currentWord.clear()
             }
         }
 
         fun nextCommand() {
+            nextWord()
             if (currentCommand.isNotEmpty()) {
-                nextWord()
-                commands += Command(currentCommand)
+                commands += Command(currentCommand.toList())
                 currentCommand.clear()
             }
         }
@@ -39,7 +39,7 @@ object Lexer {
         while (position < text.length) {
             when (text[position]) {
                 PIPE -> nextCommand()
-                WS -> nextWord()
+                in WS -> nextWord()
                 RAW_QUOTE -> {
                     nextWordPart()
                     val closingQuoteIndex = text.indexOf(RAW_QUOTE, position + 1)

@@ -4,6 +4,8 @@ import ru.spbau.mit.aush.ast.Environment
 import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
+import java.io.PrintStream
+import kotlin.concurrent.thread
 
 sealed class Command {
     abstract fun evaluate(
@@ -46,7 +48,7 @@ private object EchoCommand : Command() {
     ) {
         environment.io.output.writer().run {
             for (string in args) {
-                append(string)
+                append(string + " ")
             }
             appendln()
         }
@@ -116,7 +118,7 @@ private object PwdCommand : Command() {
             args: List<String>,
             environment: Environment
     ) {
-        environment.io.output.writer().appendln(System.getProperty("user.dir"))
+        PrintStream(environment.io.output).println(System.getProperty("user.dir"))
     }
 }
 
@@ -129,7 +131,7 @@ object ExitCommand : Command() {
     }
 }
 
-private class ExternalCommand(val name: String) : Command() {
+private data class ExternalCommand(val name: String) : Command() {
     override fun evaluate(
             args: List<String>,
             environment: Environment
@@ -142,9 +144,29 @@ private class ExternalCommand(val name: String) : Command() {
         val subOutput = subProcess.outputStream
         val subError = subProcess.errorStream
 
-        environment.io.input.copyTo(subOutput)
+        val pipeStreamThread = thread(true) {
+            val input = environment.io.input.bufferedReader()
+            val output = subOutput.bufferedWriter()
+            val buffer = CharArray(BUFFER_SIZE)
+
+            while (subProcess.isAlive) {
+                val readBytes = input.read(buffer)
+                if (readBytes == -1) {
+                    break
+                } else {
+                    output.write(buffer, 0, readBytes)
+                }
+            }
+        }
+
         subProcess.waitFor()
+        pipeStreamThread.join()
+
         subInput.copyTo(environment.io.output)
         subError.copyTo(environment.io.error)
+    }
+
+    private companion object {
+        const val BUFFER_SIZE = 512
     }
 }

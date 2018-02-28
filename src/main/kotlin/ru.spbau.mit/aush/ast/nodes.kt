@@ -27,7 +27,7 @@ abstract class ASTNode {
     ): EvaluationResult
 }
 
-class CommandNode(
+data class CommandNode(
         private val commandName: Word,
         private val args: List<Word>
 ) : ASTNode() {
@@ -47,12 +47,18 @@ class CommandNode(
                 EvaluationSuccess(EnvironmentVariables.emptyVariables)
             }
         } catch (throwable: Throwable) {
-            EvaluationFailure(throwable)
+            EvaluationFailure(
+                    (listOf(commandName) + args)
+                            .joinToString(" ") {
+                                it.interpolate(environment.variables)
+                            },
+                    throwable
+            )
         }
     }
 }
 
-class PipeNode(
+data class PipeNode(
         private val left: ASTNode,
         private val right: ASTNode
 ) : ASTNode() {
@@ -63,10 +69,12 @@ class PipeNode(
         val resultLeft = left.evaluate(environment.copy(
                 io = environment.io.copy(output = pipeOut)
         ))
+        pipeOut.close()
         when (resultLeft) {
             is EvaluationFailure -> return EvaluationFailure(
+                    "|",
                     SubCommandEvaluationFailed(
-                            left,
+                            resultLeft.command,
                             resultLeft.failureCause
                     )
             )
@@ -79,8 +87,9 @@ class PipeNode(
             is EvaluationSuccess ->
                 EvaluationSuccess(EnvironmentVariables.emptyVariables)
             is EvaluationFailure -> EvaluationFailure(
+                    "|",
                     SubCommandEvaluationFailed(
-                            right,
+                            resultRight.command,
                             resultRight.failureCause
                     )
             )
@@ -89,7 +98,7 @@ class PipeNode(
     }
 }
 
-class DefineVariableNode(
+data class DefineVariableNode(
         private val name: String,
         private val value: Word,
         private val followingNode: ASTNode

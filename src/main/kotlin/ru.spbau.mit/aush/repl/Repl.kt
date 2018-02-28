@@ -7,40 +7,43 @@ import ru.spbau.mit.aush.ast.EnvironmentVariables
 import ru.spbau.mit.aush.evaluation.EvaluationFailure
 import ru.spbau.mit.aush.evaluation.EvaluationSuccess
 import ru.spbau.mit.aush.evaluation.SuccessfullyExited
-import ru.spbau.mit.aush.lexer.LexFailure
-import ru.spbau.mit.aush.lexer.LexSuccess
-import ru.spbau.mit.aush.lexer.Lexer
-import ru.spbau.mit.aush.lexer.UnclosedQuote
+import ru.spbau.mit.aush.lexer.*
 import ru.spbau.mit.aush.parser.CommandListParser
 import java.io.PrintStream
-import java.util.*
 
 class Repl(
         private val environmentIO: EnvironmentIO
 ) {
-    private val input = Scanner(environmentIO.input)
-    private val output = PrintStream(environmentIO.output)
-    private val error = PrintStream(environmentIO.error)
+    private val input
+        get()  = environmentIO.input.bufferedReader()
+
+    private val output
+        get() = PrintStream(environmentIO.output)
+
+    private val error
+        get() = PrintStream(environmentIO.error)
 
     var environmentVariables = EnvironmentVariables.emptyVariables
 
-    fun greet() =
+    private fun greet() =
             output.println("Welcome to AUsh (Academic University SHell)")
 
-    private fun promptInput() =
-            output.print("> ")
-
-    private fun readLine(): String {
-        promptInput()
-        return input.nextLine()
+    private fun promptInput() {
+        output.print("> ")
     }
 
-    private fun readCommand(): ASTNode {
-        var commandsString = ""
+    private fun readLine(): String? {
+        promptInput()
+        return input.readLine()
+    }
+
+    private fun readCommand(): ASTNode? {
+        var commandsString = readLine() ?: return null
         var lexResult = Lexer.tryLex(commandsString)
-        while (lexResult is LexFailure && lexResult.exception is UnclosedQuote) {
-            val inputLine = readLine()
-            commandsString += (if (commandsString.isEmpty()) "" else "\n") + inputLine
+        while (lexResult is LexFailure
+                && (lexResult.exception is UnclosedQuote
+                        || lexResult.exception == NoCommandAfterPipe)) {
+            commandsString += "\n" + readLine()
             lexResult = Lexer.tryLex(commandsString)
         }
         return when (lexResult) {
@@ -56,7 +59,7 @@ class Repl(
 
     private tailrec fun runInner() {
         try {
-            val command = readCommand()
+            val command = readCommand() ?: return
             val result = command.evaluate(
                     Environment(environmentVariables, environmentIO)
             )
@@ -67,15 +70,16 @@ class Repl(
                 SuccessfullyExited -> return
                 is EvaluationFailure ->
                     throw FailedCommandEvaluation(
-                            command,
+                            result.command,
                             result.failureCause
                     )
             }
         } catch (throwable: Throwable) {
-            error.println(
-                    "Evaluation failed: ${
-                        throwable.message ?: "no reason supplied"
-                    }"
+            output.println(
+                    """
+                        |Evaluation failed because
+                        |${throwable.message ?: throwable}
+                    """.trimMargin()
             )
         }
         runInner()
