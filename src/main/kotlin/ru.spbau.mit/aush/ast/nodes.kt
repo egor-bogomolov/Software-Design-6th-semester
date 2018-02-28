@@ -8,6 +8,7 @@ import ru.spbau.mit.aush.lexer.WordPart
 import java.io.PipedInputStream
 import java.io.PipedOutputStream
 
+
 private fun Word.interpolate(
         environmentVariables: EnvironmentVariables
 ): String =
@@ -21,16 +22,33 @@ private fun Word.interpolate(
             }
         }
 
+/**
+ * Represents node in abstract syntax tree of a command
+ */
 abstract class ASTNode {
+
+    /**
+     * Evaluates node in given environments
+     *
+     * @param environment environment to evaluate in
+     * @return instance of {@link ru.spbau.mit.aush.evaluation.EvaluationResult} corresponding to result of evaluation
+     */
     abstract fun evaluate(
             environment: Environment
     ): EvaluationResult
 }
 
+/**
+ * Represents shell command with arguments
+ */
 data class CommandNode(
         private val commandName: Word,
         private val args: List<Word>
 ) : ASTNode() {
+
+    /**
+     * {@inheritDoc}
+     */
     override fun evaluate(environment: Environment): EvaluationResult {
         return try {
             val command =
@@ -58,10 +76,17 @@ data class CommandNode(
     }
 }
 
+/**
+ * Represents Bash-like pipe between two nodes
+ */
 data class PipeNode(
         private val left: ASTNode,
         private val right: ASTNode
 ) : ASTNode() {
+
+    /**
+     * {@inheritDoc}
+     */
     override fun evaluate(environment: Environment): EvaluationResult {
         val pipeIn = PipedInputStream()
         val pipeOut = PipedOutputStream()
@@ -72,10 +97,10 @@ data class PipeNode(
         pipeOut.close()
         when (resultLeft) {
             is EvaluationFailure -> return EvaluationFailure(
-                    "|",
-                    SubCommandEvaluationFailed(
+                    "${resultLeft.command} |",
+                    CommandEvaluationFailedException(
                             resultLeft.command,
-                            resultLeft.failureCause
+                            resultLeft.cause
                     )
             )
             SuccessfullyExited -> return SuccessfullyExited
@@ -87,10 +112,10 @@ data class PipeNode(
             is EvaluationSuccess ->
                 EvaluationSuccess(EnvironmentVariables.emptyVariables)
             is EvaluationFailure -> EvaluationFailure(
-                    "|",
-                    SubCommandEvaluationFailed(
+                    "| ${resultRight.command}",
+                    CommandEvaluationFailedException(
                             resultRight.command,
-                            resultRight.failureCause
+                            resultRight.cause
                     )
             )
             SuccessfullyExited -> SuccessfullyExited
@@ -98,14 +123,24 @@ data class PipeNode(
     }
 }
 
+/**
+ * Represents environment variable definition
+ */
 data class DefineVariableNode(
         private val name: String,
         private val value: Word,
         private val followingNode: ASTNode
 ) : ASTNode() {
+    /**
+     * Convenience constructor which takes pair of (name, value)
+     * rather than using them as different arguments
+     */
     constructor(nameValuePair: Pair<String, Word>, followingNode: ASTNode) :
             this(nameValuePair.first, nameValuePair.second, followingNode)
 
+    /**
+     * {@inheritDoc}
+     */
     override fun evaluate(environment: Environment) =
             followingNode.evaluate(
                     environment.copy(
@@ -115,6 +150,9 @@ data class DefineVariableNode(
             )
 }
 
+/**
+ * Represents a no-op
+ */
 object EmptyNode : ASTNode() {
     override fun evaluate(environment: Environment): EvaluationSuccess =
             EvaluationSuccess(environment.variables)

@@ -1,65 +1,67 @@
 package ru.spbau.mit.aush.lexer
 
-object Lexer {
-    private const val PLAIN_QUOTE = '\"'
-    private const val RAW_QUOTE = '\''
-    private const val PIPE = '|'
-    private const val WS = " \n"
+/**
+ * Represents command language lexer
+ * Initial error checking is also performed here
+ * (closed quotes, command after pipe)
+ */
+class Lexer private constructor(private val text: String) {
+    private val commands: MutableList<Command> = mutableListOf()
+    private val currentCommand: MutableList<Word> = mutableListOf()
+    private val currentWord: MutableList<WordPart> = mutableListOf()
+    private var currentWordPart = ""
 
-    private fun lex(text: String): List<Command> {
-        val commands: MutableList<Command> = mutableListOf()
-        val currentCommand: MutableList<Word> = mutableListOf()
-        val currentWord: MutableList<WordPart> = mutableListOf()
-        var currentWordPart = ""
-
-        fun nextWordPart(type: WordPart.Type = WordPart.Type.UNQUOTED) {
-            if (currentWordPart.isNotEmpty()) {
-                currentWord += WordPart(currentWordPart, type)
-                currentWordPart = ""
-            }
+    private fun nextWordPart(type: WordPart.Type = WordPart.Type.UNQUOTED) {
+        if (currentWordPart.isNotEmpty()) {
+            currentWord += WordPart(currentWordPart, type)
+            currentWordPart = ""
         }
+    }
 
-        fun nextWord() {
-            nextWordPart()
-            if (currentWord.isNotEmpty()) {
-                currentCommand += Word(currentWord.toList())
-                currentWord.clear()
-            }
+    private fun nextWord() {
+        nextWordPart()
+        if (currentWord.isNotEmpty()) {
+            currentCommand += Word(currentWord.toList())
+            currentWord.clear()
         }
+    }
 
-        fun nextCommand() {
-            nextWord()
-            if (currentCommand.isNotEmpty()) {
-                commands += Command(currentCommand.toList())
-                currentCommand.clear()
-            }
+    private fun nextCommand() {
+        nextWord()
+        if (currentCommand.isNotEmpty()) {
+            commands += Command(currentCommand.toList())
+            currentCommand.clear()
         }
+    }
 
+    private fun processQuotedWordPart(quote: Char, position: Int): Int {
+        val type = when (quote) {
+            RAW_QUOTE -> WordPart.Type.RAW_QUOTED
+            PLAIN_QUOTE -> WordPart.Type.PLAIN_QUOTED
+            else -> throw LexerInternalException("got unexpected character '$quote' as a quote")
+        }
+        nextWordPart()
+
+        val closingQuoteIndex = text.indexOf(quote, position + 1)
+        if (closingQuoteIndex == -1) {
+            throw UnclosedQuote(quote)
+        }
+        currentWordPart = text.substring(position + 1, closingQuoteIndex)
+        nextWordPart(type)
+
+        return closingQuoteIndex
+    }
+
+    private fun lex(): List<Command> {
         var position = 0
         while (position < text.length) {
             when (text[position]) {
                 PIPE -> nextCommand()
                 in WS -> nextWord()
-                RAW_QUOTE -> {
-                    nextWordPart()
-                    val closingQuoteIndex = text.indexOf(RAW_QUOTE, position + 1)
-                    if (closingQuoteIndex == -1) {
-                        throw UnclosedRawQuote
-                    }
-                    currentWordPart = text.substring(position + 1, closingQuoteIndex)
-                    nextWordPart(WordPart.Type.RAW_QUOTED)
-                    position = closingQuoteIndex
-                }
-                PLAIN_QUOTE -> {
-                    nextWordPart()
-                    val closingQuoteIndex = text.indexOf(PLAIN_QUOTE, position + 1)
-                    if (closingQuoteIndex == -1) {
-                        throw UnclosedPlainQuote
-                    }
-                    currentWordPart = text.substring(position + 1, closingQuoteIndex)
-                    nextWordPart(WordPart.Type.PLAIN_QUOTED)
-                    position = closingQuoteIndex
-                }
+                RAW_QUOTE ->
+                    position = processQuotedWordPart(RAW_QUOTE, position)
+                PLAIN_QUOTE ->
+                    position = processQuotedWordPart(PLAIN_QUOTE, position)
                 else -> currentWordPart += text[position]
             }
             position++
@@ -75,10 +77,23 @@ object Lexer {
         return commands
     }
 
-    fun tryLex(text: String): LexResult =
-            try {
-                LexSuccess(lex(text))
-            } catch (lexerException: LexerException) {
-                LexFailure(lexerException)
-            }
+    companion object {
+        private const val PLAIN_QUOTE = '\"'
+        private const val RAW_QUOTE = '\''
+        private const val PIPE = '|'
+        private const val WS = " \n"
+
+        /**
+         * Runs lexer on a given string
+         *
+         * @param text string to process
+         * @return instance of {@link ru.spbau.mit.aush.lexer.LexResult} corresponding to the result
+         */
+        fun tryLex(text: String): LexResult =
+                try {
+                    LexSuccess(Lexer(text).lex())
+                } catch (lexerException: LexerException) {
+                    LexFailure(lexerException)
+                }
+    }
 }

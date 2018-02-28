@@ -1,8 +1,10 @@
 package ru.spbau.mit.aush
 
 import ru.spbau.mit.aush.ast.EnvironmentIO
-import ru.spbau.mit.aush.repl.Repl
 
+/**
+ * Runs the REPL with System streams as its arguments
+ */
 fun main(args: Array<String>) {
     Repl(
             EnvironmentIO(

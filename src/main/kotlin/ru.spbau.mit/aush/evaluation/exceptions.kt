@@ -1,16 +1,22 @@
 package ru.spbau.mit.aush.evaluation
 
+/**
+ * Represents exceptions occurred in evaluation process
+ */
 sealed class EvaluationException(
         message: String? = null,
         cause: Throwable? = null) : Exception(message, cause)
 
-class SubCommandEvaluationFailed(
-        subCommand: String,
-        failureCause: Throwable
+/**
+ * Represents an exception in evaluation of a specific command
+ */
+class CommandEvaluationFailedException(
+        command: String,
+        cause: Throwable
 ) : EvaluationException(
         """
-            |sub-command "$subCommand" evaluation failed because
-            |${failureCause.message ?: failureCause}
+            |command "$command" evaluation failed because
+            |${cause.message ?: cause}
         """.trimMargin(),
-        failureCause
+        cause
 )

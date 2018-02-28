@@ -7,13 +7,29 @@ import java.io.OutputStream
 import java.io.PrintStream
 import kotlin.concurrent.thread
 
+/**
+ * Represents shell command
+ */
 sealed class Command {
+    /**
+     * Runs the command with given arguments and in the given environment
+     *
+     * @param args list of arguments
+     * @param environment environment in which the command should be running
+     */
     abstract fun evaluate(
             args: List<String> = emptyList(),
             environment: Environment
     )
 
     companion object {
+        /**
+         * Gets the right command by its name
+         * If there is no such built-in command then external shell command will be executed
+         *
+         * @param name name of the command
+         * @return corresponding command
+         */
         fun getCommand(name: String): Command = commands[name] ?: ExternalCommand(name)
 
         private val commands = mapOf(
@@ -26,6 +42,11 @@ sealed class Command {
     }
 }
 
+/**
+ * Represents simplified version of `cat` Bash command
+ * Outputs contents of files given in its arguments
+ * If no arguments are provided then input stream is outputted
+ */
 private object CatCommand : Command() {
     override fun evaluate(
             args: List<String>,
@@ -41,20 +62,27 @@ private object CatCommand : Command() {
     }
 }
 
+/**
+ * Represents simplified version of `echo` Bash command
+ * Outputs its arguments separated by whitespace character on a new line
+ */
 private object EchoCommand : Command() {
     override fun evaluate(
             args: List<String>,
             environment: Environment
     ) {
-        environment.io.output.writer().run {
-            for (string in args) {
-                append(string + " ")
-            }
-            appendln()
-        }
+        PrintStream(environment.io.output).println(
+                args.joinToString(" ")
+        )
     }
 }
 
+/**
+ * Represents simplified version of `wc` Bash command
+ * For each of its arguments outputs number of lines, words and bytes in a corresponding file
+ * Also outputs total counts
+ * If no arguments are given then outputs same statistics for its input stream
+ */
 private object WcCommand : Command() {
     private data class Stats(
             val lines: Int,
@@ -113,6 +141,10 @@ private object WcCommand : Command() {
     }
 }
 
+/**
+ * Represents simplified version of `pwd` Bash command
+ * Outputs current working directory
+ */
 private object PwdCommand : Command() {
     override fun evaluate(
             args: List<String>,
@@ -122,6 +154,10 @@ private object PwdCommand : Command() {
     }
 }
 
+/**
+ * Represents simplified version of `exit` Bash command
+ * Exits the shell
+ */
 object ExitCommand : Command() {
     override fun evaluate(
             args: List<String>,
@@ -131,6 +167,9 @@ object ExitCommand : Command() {
     }
 }
 
+/**
+ * Represents a stand-in for a command which is not built-in
+ */
 private data class ExternalCommand(val name: String) : Command() {
     override fun evaluate(
             args: List<String>,

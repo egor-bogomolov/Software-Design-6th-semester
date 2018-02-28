@@ -1,9 +1,10 @@
-package ru.spbau.mit.aush.repl
+package ru.spbau.mit.aush
 
 import ru.spbau.mit.aush.ast.ASTNode
 import ru.spbau.mit.aush.ast.Environment
 import ru.spbau.mit.aush.ast.EnvironmentIO
 import ru.spbau.mit.aush.ast.EnvironmentVariables
+import ru.spbau.mit.aush.evaluation.CommandEvaluationFailedException
 import ru.spbau.mit.aush.evaluation.EvaluationFailure
 import ru.spbau.mit.aush.evaluation.EvaluationSuccess
 import ru.spbau.mit.aush.evaluation.SuccessfullyExited
@@ -11,19 +12,17 @@ import ru.spbau.mit.aush.lexer.*
 import ru.spbau.mit.aush.parser.CommandListParser
 import java.io.PrintStream
 
+/**
+ * Represents the shell running with given streams
+ */
 class Repl(
         private val environmentIO: EnvironmentIO
 ) {
-    private val input
-        get()  = environmentIO.input.bufferedReader()
+    private val input = environmentIO.input.bufferedReader()
 
-    private val output
-        get() = PrintStream(environmentIO.output)
+    private val output = PrintStream(environmentIO.output)
 
-    private val error
-        get() = PrintStream(environmentIO.error)
-
-    var environmentVariables = EnvironmentVariables.emptyVariables
+    private var environmentVariables = EnvironmentVariables.emptyVariables
 
     private fun greet() =
             output.println("Welcome to AUsh (Academic University SHell)")
@@ -52,11 +51,6 @@ class Repl(
         }
     }
 
-    fun run() {
-        greet()
-        runInner()
-    }
-
     private tailrec fun runInner() {
         try {
             val command = readCommand() ?: return
@@ -69,9 +63,9 @@ class Repl(
                 }
                 SuccessfullyExited -> return
                 is EvaluationFailure ->
-                    throw FailedCommandEvaluation(
+                    throw CommandEvaluationFailedException(
                             result.command,
-                            result.failureCause
+                            result.cause
                     )
             }
         } catch (throwable: Throwable) {
@@ -82,6 +76,14 @@ class Repl(
                     """.trimMargin()
             )
         }
+        runInner()
+    }
+
+    /**
+     * Greets the user and runs the main shell loop
+     */
+    fun run() {
+        greet()
         runInner()
     }
 }

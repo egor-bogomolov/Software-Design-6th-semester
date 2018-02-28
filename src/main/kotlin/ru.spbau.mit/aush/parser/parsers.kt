@@ -5,11 +5,29 @@ import ru.spbau.mit.aush.lexer.Command
 import ru.spbau.mit.aush.lexer.Word
 import ru.spbau.mit.aush.lexer.WordPart
 
+/**
+ * Represents a parser from F to T
+ */
 sealed class Parser<in F, out T> {
+    /**
+     * Parses input
+     *
+     * @param input input to parse
+     * @return parsed result
+     */
     abstract fun parse(input: F): T
 }
 
-object EnvironmentVariableParser : Parser<Word, Pair<String,Word>?>() {
+/**
+ * Represents a parser of environment variable definitions
+ */
+private object EnvironmentVariableParser : Parser<Word, Pair<String,Word>?>() {
+    /**
+     * Parses input
+     *
+     * @param input {@link ru.spbau.mit.aush.lexer.Word} to parse
+     * @return if input is of form `identifier=word` parser succeeds and returns (identifier, word). null otherwise
+     */
     override fun parse(input: Word): Pair<String,Word>? {
         val firstPart = input.parts.first()
         if (firstPart.type == WordPart.Type.UNQUOTED) {
@@ -34,7 +52,16 @@ object EnvironmentVariableParser : Parser<Word, Pair<String,Word>?>() {
     }
 }
 
-object CommandParser : Parser<Command, ASTNode>() {
+/**
+ * Represents a parser of a single command
+ */
+private object CommandParser : Parser<Command, ASTNode>() {
+    /**
+     * Parses input. Assumed command form is `envVar* commandName arg*`
+     *
+     * @param input {@link ru.spbau.mit.aush.lexer.Command} to parse
+     * @return ASTNode representing the parsed command
+     */
     override fun parse(input: Command): ASTNode {
         val commandNameIndex =
                 input.words.indexOfFirst {
@@ -59,7 +86,17 @@ object CommandParser : Parser<Command, ASTNode>() {
     }
 }
 
+/**
+ * Represents a parser for input after lexing
+ */
 object CommandListParser : Parser<List<Command>, ASTNode>() {
+    /**
+     * Parser list of commands and converts it to AST.
+     * Commands are piped in order they are in input list
+     *
+     * @param input list of lexed commands
+     * @return AST representing input
+     */
     override fun parse(input: List<Command>): ASTNode {
         return if (input.isEmpty()) {
             EmptyNode
