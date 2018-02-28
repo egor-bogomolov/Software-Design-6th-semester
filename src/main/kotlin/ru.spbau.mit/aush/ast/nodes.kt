@@ -16,11 +16,11 @@ private fun Word.interpolate(
 ): String =
         parts.joinToString {
             when (it.type) {
-                WordPart.Type.PLAIN_QUOTED, WordPart.Type.UNQUOTED ->
-                    "\$\\w".toRegex().replace(it.string) {
-                        match -> environmentVariables[match.value.substring(1)]
-                    }
                 WordPart.Type.RAW_QUOTED -> it.string
+                else -> "\\$\\w+".toRegex().replace(it.string) {
+                    match ->
+                    environmentVariables[match.value.substring(1)]
+                }
             }
         }
 

@@ -8,9 +8,9 @@ import java.io.ByteArrayOutputStream
 import kotlin.test.assertEquals
 
 abstract class TestCommand(name: String) {
-    val command = Command.getCommand(name)
+    private val command = Command.getCommand(name)
 
-    fun runTest(
+    private fun runTest(
             arguments: List<String>,
             environment: Environment,
             expectedOutput: String,
