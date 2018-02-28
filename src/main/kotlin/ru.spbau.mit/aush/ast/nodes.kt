@@ -14,7 +14,7 @@ import java.io.PipedOutputStream
 private fun Word.interpolate(
         environmentVariables: EnvironmentVariables
 ): String =
-        parts.joinToString {
+        parts.joinToString("") {
             when (it.type) {
                 WordPart.Type.RAW_QUOTED -> it.string
                 else -> "\\$\\w+".toRegex().replace(it.string) {

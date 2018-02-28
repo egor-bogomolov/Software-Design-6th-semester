@@ -14,7 +14,7 @@ class TestRepl {
                     |echo ${"$"}a
                     |a=3
                     |echo ${"$"}a
-                    |echo "multiline
+                    |echo "multi line
                     |string"
                     |echo "some string" | cat
                     |exit
@@ -28,7 +28,7 @@ class TestRepl {
                     |> 2
                     |>${" "}
                     |> > 3
-                    |> > multiline
+                    |> > multi line
                     |string
                     |> some string
                     |>${" "}
