@@ -9,7 +9,7 @@ import java.io.ByteArrayOutputStream
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class NodesTest {
+class TestNodes {
     private val echoCommandNode =
             CommandNode(
                     Word(listOf(

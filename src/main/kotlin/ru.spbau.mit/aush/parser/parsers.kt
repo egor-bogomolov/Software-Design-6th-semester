@@ -21,7 +21,7 @@ sealed class Parser<in F, out T> {
 /**
  * Represents a parser of environment variable definitions
  */
-private object EnvironmentVariableParser : Parser<Word, Pair<String,Word>?>() {
+internal object EnvironmentVariableParser : Parser<Word, Pair<String,Word>?>() {
     /**
      * Parses input
      *
@@ -39,13 +39,16 @@ private object EnvironmentVariableParser : Parser<Word, Pair<String,Word>?>() {
                             .isJavaIdentifierStart()
                     && firstPart
                             .string
-                            .substring(0..assignIndex)
+                            .substring(1, assignIndex)
                             .all(Char::isJavaIdentifierPart)) {
-                val name = firstPart.string.substring(0..assignIndex)
+                val name = firstPart.string.substring(0, assignIndex)
                 val newFirstPart = firstPart.string.substring(assignIndex + 1)
-                return name to Word(
-                        listOf(WordPart(newFirstPart, WordPart.Type.UNQUOTED))
-                                + input.parts.drop(1))
+                if (newFirstPart.isNotEmpty() || input.parts.size > 1) {
+                    return name to Word(
+                            listOf(WordPart(newFirstPart, WordPart.Type.UNQUOTED))
+                                    + input.parts.drop(1)
+                    )
+                }
             }
         }
         return null
@@ -55,7 +58,7 @@ private object EnvironmentVariableParser : Parser<Word, Pair<String,Word>?>() {
 /**
  * Represents a parser of a single command
  */
-private object CommandParser : Parser<Command, ASTNode>() {
+internal object CommandParser : Parser<Command, ASTNode>() {
     /**
      * Parses input. Assumed command form is `envVar* commandName arg*`
      *
@@ -67,11 +70,10 @@ private object CommandParser : Parser<Command, ASTNode>() {
                 input.words.indexOfFirst {
                     EnvironmentVariableParser.parse(it) == null
                 }
-        val environmentVariables =
-                input
-                        .words
-                        .take(commandNameIndex)
-                        .map { EnvironmentVariableParser.parse(it)!! }
+        val environmentVariables = when (commandNameIndex) {
+            -1 -> input.words
+            else -> input.words.take(commandNameIndex)
+        }.map { EnvironmentVariableParser.parse(it)!! }
         val tailNode: ASTNode = when (commandNameIndex) {
             -1 -> EmptyNode
             else -> CommandNode(
