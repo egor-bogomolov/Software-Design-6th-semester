@@ -42,4 +42,4 @@ Represented by `ASTNode`s which have method `evaluate(environment)`. Its subclas
 - `CommandNode(command, args) => command args`
 - `PipeNode(l, r) => l | r`
 - `DefineVariableNode(name, value, next) => name=value next`
-- `EmptyNode => ` -- needed in case the command entirely consists of environment variable assignments
+- `EmptyNode => _no-op_` -- needed in case the command entirely consists of environment variable assignments
