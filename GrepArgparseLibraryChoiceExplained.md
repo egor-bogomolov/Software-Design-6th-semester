@@ -1,5 +1,5 @@
 First I went to popular and active [Awesome Kotlin](https://github.com/KotlinBy/awesome-kotlin)
-GitHub repository, where information one can find information about decent 
+GitHub repository, where one can find information about decent 
 libraries for Kotlin and searched for libraries for CLI argument parsing.
 
 I got three results and compared them.
@@ -12,7 +12,7 @@ library                       | popularity (stars + forks) | commits | last comm
 [xenomachina/kotlin-argparser](https://github.com/xenomachina/kotlin-argparser)  | ✓ 213+18                   | ✓ 211   |   Jan 19 2018     | ✓ LGPL-2.1  
 
 From there the choice was quite obvious, but I decided to look at usage examples for each library (table order preserved):
-- option name to option are mapped using Map, standard features (defaults, descriptions...), limited casting possibilities (cannot read option and get its value as arbitrary class instance) 
+- option names are mapped to options using getters for option names in the parser class, standard features (defaults, descriptions...), limited casting possibilities (cannot read option and get its value as arbitrary class instance) 
 - mapping using delegate properties, standard features, limited casting
 - mapping using delegates, standard features, ability to map parsed argument
 
