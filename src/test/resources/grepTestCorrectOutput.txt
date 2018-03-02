@@ -1,0 +1,2 @@
+grepTest.txt:Sample text in order to test grep command copied from https://blog.jolla.com/sailfish-x-whats-next/
+grepTest.txt:One of the most important community feedback channels is together.jolla.com and your votes on topics do really count. For example, last year we made 4 Sailfish OS releases and fixed over 100 items you reported in together.jolla.com, benefiting all Sailfish users. Thank you for your valuable reports!

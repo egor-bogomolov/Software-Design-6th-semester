@@ -46,8 +46,10 @@ class Lexer private constructor(private val text: String) {
         if (closingQuoteIndex == -1) {
             throw UnclosedQuoteException(quote)
         }
-        currentWordPart = text.substring(position + 1, closingQuoteIndex)
-        nextWordPart(type)
+        currentWord += WordPart(
+                text.substring(position + 1, closingQuoteIndex),
+                type
+        )
 
         return closingQuoteIndex
     }
