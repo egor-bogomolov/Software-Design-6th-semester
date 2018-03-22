@@ -1,10 +1,14 @@
 package ru.spbau.mit.aush.lexer
 
 /**
- *
+ * Command consisting of Words
  */
 data class LCommand(val words: List<Word>)
 
+
+/**
+ * Word consisting of WordParts
+ */
 data class Word(val parts: List<WordPart>)
 
 /**

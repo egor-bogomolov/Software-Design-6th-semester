@@ -1,7 +1,7 @@
 package ru.spbau.mit.aush
 
-import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream
 import ru.spbau.mit.aush.evaluation.EnvironmentIO
+import java.io.ByteArrayOutputStream
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -38,8 +38,8 @@ class TestRepl {
 
         val environmentIO = EnvironmentIO(
                 inputString.byteInputStream(),
-                ByteOutputStream(),
-                ByteOutputStream()
+                ByteArrayOutputStream(),
+                ByteArrayOutputStream()
         )
 
         Repl(environmentIO).run()
