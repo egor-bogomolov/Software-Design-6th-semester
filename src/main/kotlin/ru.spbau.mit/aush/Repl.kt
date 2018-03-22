@@ -62,11 +62,11 @@ class Repl(
                             result.cause
                     )
             }
-        } catch (throwable: Throwable) {
+        } catch (evaluationException: EvaluationException) {
             output.println(
                     """
                         |Evaluation failed because
-                        |${throwable.message ?: throwable}
+                        |${evaluationException.message ?: evaluationException}
                     """.trimMargin()
             )
         }
