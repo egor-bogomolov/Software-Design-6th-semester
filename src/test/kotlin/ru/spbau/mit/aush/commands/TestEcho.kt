@@ -1,6 +1,6 @@
 package ru.spbau.mit.aush.commands
 
-import org.junit.Test
+import kotlin.test.Test
 
 class TestEcho : TestCommand("echo") {
     @Test
