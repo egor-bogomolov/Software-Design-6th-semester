@@ -35,7 +35,7 @@ abstract class Creature(
 
     abstract fun takeDamage(damage: Float): AttackResult
     abstract fun regenerateHealth()
-    abstract fun askAction(visibleMap: GameMap): CreatureAction
+    abstract suspend fun askAction(visibleMap: GameMap): CreatureAction
 
     protected companion object: KLogging()
 }
@@ -89,7 +89,7 @@ class Monster private constructor(
         logger.info { "$name regenerated $regeneratedHealth health" }
     }
 
-    override fun askAction(visibleMap: GameMap): CreatureAction {
+    override suspend fun askAction(visibleMap: GameMap): CreatureAction {
         return PassTurn // TODO("implement actions")
     }
 }

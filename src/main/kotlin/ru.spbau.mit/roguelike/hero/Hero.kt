@@ -96,13 +96,11 @@ private interface InventoryManager: StatManager {
 }
 
 abstract class Hero(
-        name: String,
-        baseMaxHealth: Float,
-        baseDamage: Float
-): Creature(name, baseMaxHealth, baseDamage), InventoryManager, StatManager {
+        name: String
+): Creature(name, 100f, 10f), InventoryManager, StatManager { // TODO("resource getter")
     val stats = HeroStats(
-            baseMaxHealth,
-            baseDamage
+            maxHealth,
+            damage
     )
 
     var totalStats: BasicStats = stats.basicStats

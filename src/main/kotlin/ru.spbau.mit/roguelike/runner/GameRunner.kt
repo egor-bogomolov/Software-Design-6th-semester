@@ -1,5 +1,6 @@
 package ru.spbau.mit.roguelike.runner
 
+import kotlinx.coroutines.experimental.runBlocking
 import mu.KLogging
 import ru.spbau.mit.roguelike.creatures.*
 import ru.spbau.mit.roguelike.hero.Hero
@@ -41,49 +42,56 @@ class GameRunner(
     private fun visibleMap(position: Pair<Int,Int>): GameMap =
             gameMap // TODO("think about field of view limitation")
 
-    fun nextTurn() {
-        creatures.map { (position, creature) ->
-            val action = creature.askAction(visibleMap(position))
-            when (action) {
-                is Move -> return@map Pair(
-                        gameMap.move(position, action.direction),
-                        creature
-                )
-                PassTurn -> {}
-                is Attack -> {
-                    val result = gameMap.attack(position, action.direction)
+    private suspend fun processAction(
+            position: Pair<Int, Int>,
+            creature: Creature
+    ): Pair<Pair<Int,Int>,Creature> {
+        val action = creature.askAction(visibleMap(position))
+        when (action) {
+            is Move -> return Pair(
+                    gameMap.move(position, action.direction),
+                    creature
+            )
+            PassTurn -> {
+            }
+            is Attack -> {
+                val result = gameMap.attack(position, action.direction)
 
-                    if (result === Died) {
-                        val attackedPosition = Pair(
-                                position.first + action.direction.dx,
-                                position.second + action.direction.dy
-                        )
+                if (result === Died) {
+                    val attackedPosition = Pair(
+                            position.first + action.direction.dx,
+                            position.second + action.direction.dy
+                    )
 
-                        if (creatures[attackedPosition] is Hero) {
-                            gameFinished = true
-                        }
-
-                        creatures.remove(attackedPosition)
+                    if (creatures[attackedPosition] is Hero) {
+                        gameFinished = true
                     }
-                }
-                is Interact -> {
-                    val result = gameMap.interact(position, action.direction)
 
-                    when {
-                        result === GameFinish    -> {
-                            logger.info { "$creature successfully exited the world" }
-                            gameFinished = true
-                        }
-                        result is FoundItems &&
-                                creature is Hero -> {
-                            logger.info { "$creature found items ${result.items}" }
-                            creature.backpack.addAll(result.items)
-                        }
+                    creatures.remove(attackedPosition)
+                }
+            }
+            is Interact -> {
+                val result = gameMap.interact(position, action.direction)
+
+                when {
+                    result === GameFinish -> {
+                        logger.info { "$creature successfully exited the world" }
+                        gameFinished = true
+                    }
+                    result is FoundItems &&
+                            creature is Hero -> {
+                        logger.info { "$creature found items ${result.items}" }
+                        creature.backpack.addAll(result.items)
                     }
                 }
             }
+        }
+        return Pair(position, creature)
+    }
 
-            return@map Pair(position, creature)
+    fun nextTurn() {
+        runBlocking {
+            creatures.map { (position, creature) -> processAction(position, creature) }
         }
     }
 

@@ -7,8 +7,8 @@ import ru.spbau.mit.roguelike.runner.GameRunner
 import ru.spbau.mit.roguelike.runner.GameSettings
 
 abstract class GameUI(
-        protected val mapGenerator: GameMapGenerator,
-        protected val creatureGenerator: CreatureGenerator
+        internal val mapGenerator: GameMapGenerator,
+        internal val creatureGenerator: CreatureGenerator
 ) {
     internal lateinit var gameSettings: GameSettings
     internal lateinit var hero: Hero

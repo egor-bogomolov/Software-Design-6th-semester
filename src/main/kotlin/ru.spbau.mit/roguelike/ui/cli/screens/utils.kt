@@ -1,0 +1,97 @@
+package ru.spbau.mit.roguelike.ui.cli.screens
+
+import org.codetome.zircon.api.Position
+import org.codetome.zircon.api.Size
+import org.codetome.zircon.api.component.Panel
+import org.codetome.zircon.api.component.builder.ButtonBuilder
+import org.codetome.zircon.api.component.builder.PanelBuilder
+import org.codetome.zircon.api.component.builder.TextBoxBuilder
+import org.codetome.zircon.api.screen.Screen
+import java.util.function.Consumer
+import kotlin.math.max
+import kotlin.math.min
+
+internal val panelTemplate = PanelBuilder
+        .newBuilder()
+        .wrapWithBox()
+        .wrapWithShadow()
+
+internal fun setupNumberPanel(
+        screen: Screen,
+        position: Position,
+        title: String,
+        minValue: Int,
+        maxValue: Int
+): Pair<Panel,() -> Int> {
+    val valueLength = max(
+            minValue.toString().length,
+            maxValue.toString().length
+    )
+
+    val panelLength = max(
+            title.length + 5,
+            valueLength + 6
+    ) + 1
+
+    val panel = panelTemplate
+            .title(title)
+            .size(Size.of(panelLength, 4))
+            .position(Position.OFFSET_1x1.withRelative(position))
+            .build()
+
+    val lessButton = ButtonBuilder
+            .newBuilder()
+            .text("-")
+            .position(Position.of(0, 0)
+            )
+            .build()
+
+    val valueBox = TextBoxBuilder
+            .newBuilder()
+            .text(((minValue + maxValue) / 2).toString())
+            .position(Position
+                    .of(1,0)
+                    .relativeToRightOf(lessButton)
+            )
+            .size(Size.of(valueLength, 1))
+            .build()
+
+    valueBox.disable()
+
+    val moreButton = ButtonBuilder
+            .newBuilder()
+            .text("+")
+            .position(Position
+                    .of(1, 0)
+                    .relativeToRightOf(valueBox)
+            )
+            .build()
+
+    lessButton.onMouseReleased(Consumer {
+        _ ->
+        valueBox.setText(
+                max(
+                        minValue,
+                        valueBox.getText().toInt() - 1
+                ).toString()
+        )
+        screen.refresh()
+    })
+
+    moreButton.onMouseReleased(Consumer {
+        _ ->
+        valueBox.setText(
+                min(
+                        maxValue,
+                        valueBox.getText().toInt() + 1
+                ).toString()
+        )
+        screen.refresh()
+    })
+
+    panel.addComponent(lessButton)
+    panel.addComponent(valueBox)
+    panel.addComponent(moreButton)
+
+    return Pair(panel, { valueBox.getText().toInt() })
+}
