@@ -9,8 +9,9 @@ import ru.spbau.mit.roguelike.runner.EmptyMapGenerator
 import ru.spbau.mit.roguelike.runner.GameRunner
 import ru.spbau.mit.roguelike.runner.NoCreatureGenerator
 import ru.spbau.mit.roguelike.ui.GameUI
-import ru.spbau.mit.roguelike.ui.cli.screens.setupGameScreen
-import ru.spbau.mit.roguelike.ui.cli.screens.setupHeroScreen
+import ru.spbau.mit.roguelike.ui.cli.setup.setupGameFieldScreen
+import ru.spbau.mit.roguelike.ui.cli.setup.setupGameScreen
+import ru.spbau.mit.roguelike.ui.cli.setup.setupHeroScreen
 import kotlin.coroutines.experimental.Continuation
 
 object CLIGameUI: GameUI(EmptyMapGenerator, NoCreatureGenerator) {

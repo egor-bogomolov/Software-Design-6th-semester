@@ -1,4 +1,4 @@
-package ru.spbau.mit.roguelike.ui.cli.screens
+package ru.spbau.mit.roguelike.ui.cli.setup
 
 import org.codetome.zircon.api.Position
 import org.codetome.zircon.api.Size
