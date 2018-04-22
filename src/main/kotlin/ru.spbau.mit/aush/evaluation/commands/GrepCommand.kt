@@ -45,7 +45,7 @@ internal object GrepCommand : Command() {
 
         val regex = Regex(
                 if (parsedArgs.wholeWords) {
-                    "\b" + parsedArgs.regex + "\b"
+                    """\b${parsedArgs.regex}\b"""
                 } else {
                     parsedArgs.regex
                 },

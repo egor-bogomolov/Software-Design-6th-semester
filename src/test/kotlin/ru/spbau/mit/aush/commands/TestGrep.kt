@@ -76,7 +76,6 @@ class TestGrep : TestCommand("grep") {
         val expectedOutput =
                 javaClass.getResource("/grepTestCorrectOutput.txt").readText()
 
-
         runTest(
                 listOf(regex),
                 expectedOutput
@@ -84,6 +83,26 @@ class TestGrep : TestCommand("grep") {
                         .joinToString("\n") {
                     it.removePrefix("grepTest.txt:")
                 },
+                File(filePath).readText()
+        )
+    }
+
+    @Test
+    fun testFromPR() {
+        val regex = "maven"
+
+        val filePath = File("build.gradle").path
+
+        val expectedOutput =
+                javaClass.getResource("/grepPRTestCorrectOutput.txt").readText()
+
+        runTest(
+                listOf(regex, "-w"),
+                expectedOutput
+                        .lines()
+                        .joinToString("\n") {
+                            it.removePrefix("build.gradle:")
+                        },
                 File(filePath).readText()
         )
     }
