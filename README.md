@@ -43,3 +43,16 @@ Represented by `ASTNode`s which have method `evaluate(environment)`. Its subclas
 - `PipeNode(l, r) => l | r`
 - `DefineVariableNode(name, value, next) => name=value next`
 - `EmptyNode => _no-op_` -- needed in case the command entirely consists of environment variable assignments
+
+# HW02 AUsh::grep
+
+[link](https://drive.google.com/file/d/1X8DBiR8vheVlIVjH39UGuuxtHX3VU8s8/view)
+
+## grep command implementation over AUsh
+
+- command line argument parsing (just `-i`, `-w`, `-A n`)
+- regex search
+
+### CLI argument parse library
+
+I chose xenomachina/kotlin-argparser, [because ...](GrepArgparseLibraryChoiceExplained.md)
