@@ -34,8 +34,8 @@ class CreatureManager(
                 }
                 .toMutableMap()
         internalCreatures
-                .putIfAbsent(gameMap.entrance, mutableSetOf())!!
-                .add(hero)
+                .putIfAbsent(gameMap.entrance, mutableSetOf())
+        internalCreatures[gameMap.entrance]!!.add(hero)
         heroPosition = gameMap.entrance
     }
 

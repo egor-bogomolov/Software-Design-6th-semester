@@ -4,10 +4,15 @@ abstract class Item(
         val name: String,
         val description: String
 ) {
-    override fun toString(): String = name
+    abstract fun detailedInfo(): String
 }
 
 class Junk(
         name: String,
         description: String
-): Item(name, description)
+): Item(name, description) {
+    override fun detailedInfo(): String =
+            """$name
+                |$description
+            """.trimMargin()
+}

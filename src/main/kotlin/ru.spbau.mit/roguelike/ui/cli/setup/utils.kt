@@ -2,14 +2,35 @@ package ru.spbau.mit.roguelike.ui.cli.setup
 
 import org.codetome.zircon.api.Position
 import org.codetome.zircon.api.Size
+import org.codetome.zircon.api.builder.LayerBuilder
+import org.codetome.zircon.api.builder.TextCharacterStringBuilder
+import org.codetome.zircon.api.color.TextColorFactory
 import org.codetome.zircon.api.component.Panel
 import org.codetome.zircon.api.component.builder.ButtonBuilder
 import org.codetome.zircon.api.component.builder.PanelBuilder
 import org.codetome.zircon.api.component.builder.TextBoxBuilder
+import org.codetome.zircon.api.graphics.Layer
 import org.codetome.zircon.api.screen.Screen
+import ru.spbau.mit.roguelike.items.Item
 import java.util.function.Consumer
 import kotlin.math.max
 import kotlin.math.min
+
+internal fun itemInfoLayer(
+        position: Position,
+        item: Item
+): Layer =
+        LayerBuilder.newBuilder()
+                .offset(position)
+                .textImage(
+                        TextCharacterStringBuilder.newBuilder()
+                                .backgroundColor(TextColorFactory.DEFAULT_BACKGROUND_COLOR)
+                                .foregroundColor(TextColorFactory.fromString("#aaaadd"))
+                                .text(item.detailedInfo())
+                                .build()
+                                .toTextImage()
+                )
+                .build()
 
 internal val panelTemplate = PanelBuilder
         .newBuilder()

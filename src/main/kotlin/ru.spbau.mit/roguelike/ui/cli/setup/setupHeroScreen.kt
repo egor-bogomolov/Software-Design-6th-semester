@@ -54,8 +54,12 @@ internal fun CLIGameUI.setupHeroScreen(
             )
             .build()
 
+    var resumed = false
     continueButton.onMouseReleased(Consumer {
-        _ -> heroForwarder.resume(CLIGameUI.CLIHero(nameBox.getText()))
+        if (!resumed) {
+            heroForwarder.resume(CLIGameUI.CLIHero(nameBox.getText()))
+            resumed = true
+        }
     })
 
     screen.addComponent(continueButton)

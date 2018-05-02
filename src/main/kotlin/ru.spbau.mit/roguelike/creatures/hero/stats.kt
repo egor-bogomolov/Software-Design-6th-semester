@@ -1,6 +1,11 @@
 package ru.spbau.mit.roguelike.creatures.hero
 
-class BasicStats(stats: Map<Type,Int> = emptyMap()) {
+class BasicStats(
+        stats: Map<Type,Int> = emptyMap()
+): Iterable<Map.Entry<BasicStats.Type,Int>> {
+    override fun iterator(): Iterator<Map.Entry<Type, Int>> =
+            stats.iterator()
+
     private val stats = stats.toMutableMap()
 
     enum class Type {

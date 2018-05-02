@@ -102,21 +102,25 @@ internal fun CLIGameUI.setupGameScreen(
             )
             .build()
 
+    var resumed = false
     continueButton.onMouseReleased(Consumer {
         _ ->
-        settingsForwarder.resume(
-                GameSettings(
-                        Pair(
-                                widthGetter(),
-                                heightGetter()
-                        ),
-                        GameSettings.Difficulty.valueOf(
-                                difficultySetter
-                                        .getSelectedOption()
-                                        .orElse(GameSettings.Difficulty.NORMAL.toString())
-                        )
-                )
-        )
+        if (!resumed) {
+            settingsForwarder.resume(
+                    GameSettings(
+                            Pair(
+                                    widthGetter(),
+                                    heightGetter()
+                            ),
+                            GameSettings.Difficulty.valueOf(
+                                    difficultySetter
+                                            .getSelectedOption()
+                                            .orElse(GameSettings.Difficulty.NORMAL.toString())
+                            )
+                    )
+            )
+            resumed = true
+        }
     })
 
     screen.addComponent(continueButton)
