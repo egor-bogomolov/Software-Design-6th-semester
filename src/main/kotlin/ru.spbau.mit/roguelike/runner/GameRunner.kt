@@ -1,13 +1,13 @@
 package ru.spbau.mit.roguelike.runner
 
 import kotlinx.coroutines.experimental.runBlocking
-import mu.KLogging
+import ru.spbau.mit.roguelike.Logger
 import ru.spbau.mit.roguelike.creatures.*
-import ru.spbau.mit.roguelike.hero.Hero
-import ru.spbau.mit.roguelike.map.CellWithCreature
-import ru.spbau.mit.roguelike.map.FoundItems
+import ru.spbau.mit.roguelike.creatures.hero.Hero
+import ru.spbau.mit.roguelike.map.CanExchangeItems
 import ru.spbau.mit.roguelike.map.GameFinish
 import ru.spbau.mit.roguelike.map.GameMap
+import ru.spbau.mit.roguelike.map.plus
 
 class GameRunner(
         val settings: GameSettings,
@@ -15,26 +15,14 @@ class GameRunner(
         mapGenerator: GameMapGenerator,
         creatureGenerator: CreatureGenerator
 ) {
-    val gameMap = creatureGenerator.generateCreatures(
-            settings,
-            mapGenerator.generateMap(settings)
-    )
+    val gameMap: GameMap = mapGenerator.generateMap(settings)
 
-    private val creatures: MutableMap<Pair<Int,Int>,Creature> =
-            emptyMap<Pair<Int,Int>,Creature>().toMutableMap()
-
-    init {
-        gameMap.enterWorld(hero)
-
-        for (y in 1..settings.mapDimensions.second) {
-            for (x in 1..settings.mapDimensions.first) {
-                val cell = gameMap[x, y]
-                if (cell is CellWithCreature) {
-                    creatures[Pair(x, y)] = cell.creature
-                }
-            }
-        }
-    }
+    private val creatureManager: CreatureManager =
+            CreatureManager(
+                    hero,
+                    creatureGenerator.generateCreatures(settings, gameMap),
+                    gameMap
+            )
 
     var gameFinished: Boolean = false
         private set
@@ -45,55 +33,55 @@ class GameRunner(
     private suspend fun processAction(
             position: Pair<Int, Int>,
             creature: Creature
-    ): Pair<Pair<Int,Int>,Creature> {
-        val action = creature.askAction(visibleMap(position))
+    ) {
+        val action: CreatureAction =
+                creature.askAction(visibleMap(position))
         when (action) {
-            is Move -> return Pair(
-                    gameMap.move(position, action.direction),
-                    creature
+            is Move -> creatureManager.processMove(
+                    creature,
+                    position,
+                    action.direction
             )
-            PassTurn -> {
-            }
-            is Attack -> {
-                val result = gameMap.attack(position, action.direction)
-
-                if (result === Died) {
-                    val attackedPosition = Pair(
-                            position.first + action.direction.dx,
-                            position.second + action.direction.dy
-                    )
-
-                    if (creatures[attackedPosition] is Hero) {
-                        gameFinished = true
-                    }
-
-                    creatures.remove(attackedPosition)
-                }
-            }
+            is Attack -> creatureManager.processAttack(
+                    creature,
+                    position,
+                    action.direction,
+                    action.target
+            )
             is Interact -> {
-                val result = gameMap.interact(position, action.direction)
+                if (creature !is Hero) {
+                    return // non-Hero creatures are not supposed to interact
+                }
+
+                val result = gameMap.interact(position + action.direction)
 
                 when {
                     result === GameFinish -> {
-                        logger.info { "$creature successfully exited the world" }
+                        Logger.log("${creature.name} successfully exited the world")
                         gameFinished = true
                     }
-                    result is FoundItems &&
-                            creature is Hero -> {
-                        logger.info { "$creature found items ${result.items}" }
-                        creature.backpack.addAll(result.items)
+                    result is CanExchangeItems -> {
+                        creature.exchangeItems(result.items)
                     }
                 }
             }
         }
-        return Pair(position, creature)
     }
 
     fun nextTurn() {
         runBlocking {
-            creatures.map { (position, creature) -> processAction(position, creature) }
+            processAction(
+                    creatureManager.heroPosition,
+                    creatureManager.hero
+            )
+            for ((position, creatures) in creatureManager.creatures) {
+                for (creature in creatures) {
+                    if (creature !is Hero) {
+                        processAction(position, creature)
+                    }
+                }
+            }
+            gameFinished = gameFinished && creatureManager.heroAlive
         }
     }
-
-    companion object: KLogging()
 }

@@ -11,5 +11,4 @@ abstract class GameMapException(
 ): GameException(reason, cause)
 
 object GameMapHasNoEntranceException: GameMapException("world has no entrance")
-
-object OutsideGameBoundsExceptionGame: GameMapException("requested cell outside game bounds")
+object GameMapMultipleEntrancesException: GameMapException("world has too many entrances")

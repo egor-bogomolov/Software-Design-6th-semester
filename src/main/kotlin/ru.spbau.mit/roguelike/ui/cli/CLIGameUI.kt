@@ -5,14 +5,20 @@ import org.codetome.zircon.api.builder.TerminalBuilder
 import org.codetome.zircon.api.resource.CP437TilesetResource
 import org.codetome.zircon.api.resource.ColorThemeResource
 import ru.spbau.mit.roguelike.creatures.CreatureAction
+import ru.spbau.mit.roguelike.creatures.hero.Hero
+import ru.spbau.mit.roguelike.items.Item
+import ru.spbau.mit.roguelike.map.GameMap
 import ru.spbau.mit.roguelike.runner.EmptyMapGenerator
 import ru.spbau.mit.roguelike.runner.GameRunner
+import ru.spbau.mit.roguelike.runner.GameSettings
 import ru.spbau.mit.roguelike.runner.NoCreatureGenerator
 import ru.spbau.mit.roguelike.ui.GameUI
 import ru.spbau.mit.roguelike.ui.cli.setup.setupGameFieldScreen
 import ru.spbau.mit.roguelike.ui.cli.setup.setupGameScreen
 import ru.spbau.mit.roguelike.ui.cli.setup.setupHeroScreen
+import ru.spbau.mit.roguelike.ui.cli.setup.showItemExchangeDialog
 import kotlin.coroutines.experimental.Continuation
+import kotlin.coroutines.experimental.suspendCoroutine
 
 object CLIGameUI: GameUI(EmptyMapGenerator, NoCreatureGenerator) {
     private val terminalSize = Size.of(80, 40)
@@ -28,29 +34,43 @@ object CLIGameUI: GameUI(EmptyMapGenerator, NoCreatureGenerator) {
             .initialTerminalSize(terminalSize)
             .build()
 
-    override fun setupGame() {
-        val gameSetupScreen = setupGameScreen()
+    internal class CLIHero(name: String) : Hero(name) {
+        override suspend fun askAction(visibleMap: GameMap) =
+                suspendCoroutine<CreatureAction> { continuation = it }
+
+        override suspend fun exchangeItems(items: MutableList<Item>) =
+                suspendCoroutine<Unit> {
+                    showItemExchangeDialog(items, it)
+                }
+    }
+
+    override fun setupGame(settingsForwarder: Continuation<GameSettings>) {
+        val gameSetupScreen = setupGameScreen(settingsForwarder)
         gameSetupScreen.applyColorTheme(colorTheme)
         gameSetupScreen.display()
     }
 
-    override fun setupHero() {
-        val heroSetupScreen = setupHeroScreen()
+    override fun setupHero(heroForwarder: Continuation<Hero>) {
+        val heroSetupScreen = setupHeroScreen(heroForwarder)
         heroSetupScreen.applyColorTheme(colorTheme)
         heroSetupScreen.display()
     }
 
-    override fun runGame(gameRunner: GameRunner) {
+    override fun runGame(
+            gameRunner: GameRunner
+    ) {
         val gameField = setupGameFieldScreen(gameRunner)
         gameField.applyColorTheme(colorTheme)
         gameField.display()
         while (!gameRunner.gameFinished) {
             gameRunner.nextTurn()
         }
-        showResults(gameRunner)
     }
 
-    override fun showResults(gameRunner: GameRunner) {
+    override fun showResults(
+            gameRunner: GameRunner,
+            newGameForwarder: Continuation<Boolean>
+    ) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 }

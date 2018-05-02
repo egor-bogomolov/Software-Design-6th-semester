@@ -1,25 +1,8 @@
 package ru.spbau.mit.roguelike.creatures
 
-import mu.KLogging
 import ru.spbau.mit.roguelike.map.GameMap
-import java.lang.Float.min
-import java.util.*
-
-sealed class AttackResult(
-        private val stringRepresentation: String
-) {
-    override fun toString(): String = stringRepresentation
-}
-
-class Damaged(
-        actualDamage: Float
-): AttackResult("suffered $actualDamage damage")
-
-object Dodged: AttackResult("dodged")
-
-object Died: AttackResult("died")
-
-object NoTarget: AttackResult("")
+import kotlin.math.exp
+import kotlin.math.ln
 
 abstract class Creature(
         val name: String,
@@ -27,69 +10,57 @@ abstract class Creature(
         damage: Float
 ) {
     var health: Float = maxHealth
-        protected set
+        internal set
     var maxHealth: Float = maxHealth
-        protected set
+        internal set
     var damage: Float = damage
-        protected set
+        internal set
 
-    abstract fun takeDamage(damage: Float): AttackResult
-    abstract fun regenerateHealth()
+    internal var dodgeParameter: Float = 0f
+
+    val dodgeChance: Float
+        get() = 1 - exp(-dodgeParameter)
+
     abstract suspend fun askAction(visibleMap: GameMap): CreatureAction
-
-    protected companion object: KLogging()
 }
 
-class Monster private constructor(
+class Monster(
         name: String,
         maxHealth: Float,
-        damage: Float
-): Creature(name, maxHealth, damage) {
-
-    enum class Modifier(private val stringRepresentation: String) {
-        ORDINARY("ordinary"),
-        FAST("fast"),
-        STRONG("strong");
-
-        override fun toString(): String = stringRepresentation
-    }
-
-    var modifier = Modifier.ORDINARY
-        set(newValue) {
-            if (newValue == Modifier.STRONG &&
-                    modifier != Modifier.STRONG) {
-                maxHealth *= 2
-                damage *= 2
-                health *= 2
-            } else if (newValue != Modifier.STRONG &&
-                    modifier == Modifier.STRONG) {
-                maxHealth /= 2
-                damage /= 2
-                health /= 2
-            }
-        }
-
-    override fun takeDamage(damage: Float): AttackResult {
-        val result = if (modifier == Modifier.FAST && Random().nextBoolean()) {
-            Dodged
+        damage: Float,
+        val modifier: Modifier = Modifier.ORDINARY
+): Creature(
+        name,
+        if (modifier == Modifier.STRONG) {
+            maxHealth * STRONG_HEALTH_COEFFICIENT
         } else {
-            Damaged(damage)
+            maxHealth
+        },
+        if (modifier == Modifier.STRONG) {
+            damage * STRONG_DAMAGE_COEFFICIENT
+        } else {
+            damage
         }
-        logger.info { "$name $result" }
-        if (damage >= health) {
-            logger.info { "$name $Died" }
-            return Died
+) {
+    init {
+        if (modifier == Modifier.FAST) {
+            dodgeParameter = FAST_DODGE_PARAMETER
         }
-        return result
     }
 
-    override fun regenerateHealth() {
-        val regeneratedHealth = 0.5f // TODO("get resource")
-        health = min(maxHealth, health + regeneratedHealth)
-        logger.info { "$name regenerated $regeneratedHealth health" }
+    enum class Modifier {
+        ORDINARY,
+        FAST,
+        STRONG
     }
 
     override suspend fun askAction(visibleMap: GameMap): CreatureAction {
         return PassTurn // TODO("implement actions")
+    }
+
+    companion object {
+        val FAST_DODGE_PARAMETER = -ln(0.5f)
+        const val STRONG_HEALTH_COEFFICIENT = 2
+        const val STRONG_DAMAGE_COEFFICIENT = 2
     }
 }

@@ -1,6 +1,6 @@
 package ru.spbau.mit.roguelike.items
 
-import ru.spbau.mit.roguelike.hero.BasicStats
+import ru.spbau.mit.roguelike.creatures.hero.BasicStats
 
 class Equipment(
         name: String,

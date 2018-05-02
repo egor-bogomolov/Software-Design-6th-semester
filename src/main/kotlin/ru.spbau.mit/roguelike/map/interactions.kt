@@ -8,6 +8,6 @@ object NoInteraction: InteractionResult()
 
 object GameFinish: InteractionResult()
 
-class ChangesState(val newState: TerrainCell): InteractionResult()
+class ChangesState(internal val newState: TerrainCell): InteractionResult()
 
-class FoundItems(val items: List<Item>): InteractionResult()
+class CanExchangeItems(val items: MutableList<Item>): InteractionResult()

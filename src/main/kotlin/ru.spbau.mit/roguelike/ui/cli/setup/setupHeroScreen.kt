@@ -7,15 +7,14 @@ import org.codetome.zircon.api.component.builder.ButtonBuilder
 import org.codetome.zircon.api.component.builder.LabelBuilder
 import org.codetome.zircon.api.component.builder.TextBoxBuilder
 import org.codetome.zircon.api.screen.Screen
-import ru.spbau.mit.roguelike.creatures.CreatureAction
-import ru.spbau.mit.roguelike.hero.Hero
-import ru.spbau.mit.roguelike.map.GameMap
-import ru.spbau.mit.roguelike.runner.GameRunner
+import ru.spbau.mit.roguelike.creatures.hero.Hero
 import ru.spbau.mit.roguelike.ui.cli.CLIGameUI
 import java.util.function.Consumer
-import kotlin.coroutines.experimental.suspendCoroutine
+import kotlin.coroutines.experimental.Continuation
 
-internal fun CLIGameUI.setupHeroScreen(): Screen {
+internal fun CLIGameUI.setupHeroScreen(
+        heroForwarder: Continuation<Hero>
+): Screen {
     val screen = TerminalBuilder.createScreenFor(terminal)
 
     val heroSetupLabel = LabelBuilder
@@ -56,19 +55,7 @@ internal fun CLIGameUI.setupHeroScreen(): Screen {
             .build()
 
     continueButton.onMouseReleased(Consumer {
-        _ ->
-        this.hero = object : Hero(nameBox.getText()) {
-            override suspend fun askAction(visibleMap: GameMap) =
-                    suspendCoroutine<CreatureAction> { continuation = it }
-        }
-        this.runGame(
-                GameRunner(
-                        gameSettings,
-                        hero,
-                        mapGenerator,
-                        creatureGenerator
-                )
-        )
+        _ -> heroForwarder.resume(CLIGameUI.CLIHero(nameBox.getText()))
     })
 
     screen.addComponent(continueButton)

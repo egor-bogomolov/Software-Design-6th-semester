@@ -10,9 +10,12 @@ import org.codetome.zircon.api.screen.Screen
 import ru.spbau.mit.roguelike.runner.GameSettings
 import ru.spbau.mit.roguelike.ui.cli.CLIGameUI
 import java.util.function.Consumer
+import kotlin.coroutines.experimental.Continuation
 import kotlin.math.max
 
-internal fun CLIGameUI.setupGameScreen(): Screen {
+internal fun CLIGameUI.setupGameScreen(
+        settingsForwarder: Continuation<GameSettings>
+): Screen {
     val screen = TerminalBuilder.createScreenFor(terminal)
 
     val gameSetupLabel = LabelBuilder
@@ -101,18 +104,19 @@ internal fun CLIGameUI.setupGameScreen(): Screen {
 
     continueButton.onMouseReleased(Consumer {
         _ ->
-        this.gameSettings = GameSettings(
-                Pair(
-                        widthGetter(),
-                        heightGetter()
-                ),
-                GameSettings.Difficulty.valueOf(
-                        difficultySetter
-                                .getSelectedOption()
-                                .orElse(GameSettings.Difficulty.NORMAL.toString())
+        settingsForwarder.resume(
+                GameSettings(
+                        Pair(
+                                widthGetter(),
+                                heightGetter()
+                        ),
+                        GameSettings.Difficulty.valueOf(
+                                difficultySetter
+                                        .getSelectedOption()
+                                        .orElse(GameSettings.Difficulty.NORMAL.toString())
+                        )
                 )
         )
-        this.setupHero()
     })
 
     screen.addComponent(continueButton)
