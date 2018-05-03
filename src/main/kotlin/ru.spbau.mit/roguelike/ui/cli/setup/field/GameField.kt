@@ -2,16 +2,12 @@ package ru.spbau.mit.roguelike.ui.cli.setup.field
 
 import org.codetome.zircon.api.Position
 import org.codetome.zircon.api.Size
-import org.codetome.zircon.api.builder.GameAreaBuilder
-import org.codetome.zircon.api.builder.TextCharacterBuilder
+import org.codetome.zircon.api.builder.LayerBuilder
 import org.codetome.zircon.api.builder.TextImageBuilder
-import org.codetome.zircon.api.component.builder.GameComponentBuilder
-import org.codetome.zircon.api.game.GameArea
-import org.codetome.zircon.api.game.Position3D
-import org.codetome.zircon.api.game.Size3D
+import org.codetome.zircon.api.graphics.Layer
+import org.codetome.zircon.api.graphics.TextImage
 import org.codetome.zircon.api.resource.CP437TilesetResource
 import org.codetome.zircon.api.screen.Screen
-import org.codetome.zircon.internal.font.impl.PickRandomMetaStrategy
 import ru.spbau.mit.roguelike.map.GameMap
 import ru.spbau.mit.roguelike.runner.GameRunner
 
@@ -28,92 +24,46 @@ internal class GameField(
             .title("Game field")
             .build()
 
-    private val visibleGameAreaSize = Size3D.from2DSize(
-            panel.getEffectiveSize(),
-            1
-    )
+    private val imageSize = panel.getEffectiveSize()
 
-    private val gameMapSize: Size = gameRunner.settings.mapDimensions.let {
-        Size.of(it.first, it.second)
-    }
-
-    private val virtualGameAreaSize: Size = panel.getEffectiveSize() +
-            gameMapSize
-
-    private val gameMapOffset = panel.getEffectiveSize().let {
-        Position.of(it.columns / 2, it.rows / 2)
-    }
-
-    private val gameArea = setupGameArea()
-
-    private fun setupGameArea(): GameArea {
-        val level = TextImageBuilder.newBuilder()
-                .size(virtualGameAreaSize)
-                .build()
-
-        return GameAreaBuilder.newBuilder()
-                .size(
-                        Size3D.from2DSize(
-                                virtualGameAreaSize,
-                                1
-                        )
-                )
-                .setLevel(0, level)
-                .build()
-    }
-
-    val gameComponent = GameComponentBuilder.newBuilder()
-            .gameArea(gameArea)
-            .visibleSize(visibleGameAreaSize)
-            .font(CP437TilesetResource.ROGUE_YUN_16X16.toFont())
+    private val fieldTextImage: TextImage = TextImageBuilder.newBuilder()
+            .size(imageSize)
             .build()
+
+    val offset: GameMapPosition
+        get() =
+            GameMapPosition(
+                    imageSize.columns / 2 - gameRunner.creatureManager.heroPosition.first,
+                    imageSize.rows / 2 - gameRunner.creatureManager.heroPosition.second
+            )
+
+    private var fieldLayer: Layer = constructLayerFromImage()
+
+    private fun constructLayerFromImage(): Layer =
+            LayerBuilder.newBuilder()
+                    .textImage(fieldTextImage)
+                    .offset(panel.getPosition().withRelative(Position.OFFSET_1x1))
+                    .font(CP437TilesetResource.PHOEBUS_16X16.toFont())
+                    .build()
 
     init {
         gameScreen.addComponent(panel)
-        panel.addComponent(gameComponent)
-
-        gameComponent.scrollRightBy(gameMapOffset.column)
-        gameComponent.scrollForwardBy(gameMapOffset.row)
+        refresh()
     }
-
-    private fun Position.toGameMapPosition(): GameMapPosition =
-            Pair(
-                    column - gameMapOffset.column,
-                    row - gameMapOffset.row
-            )
-
-    private fun fromGameMapPosition(gameMapPosition: GameMapPosition): Position3D =
-            Position3D.from2DPosition(
-                    Position.of(
-                            gameMapPosition.first + gameMapOffset.column,
-                            gameMapPosition.second + gameMapOffset.row
-                    ),
-                    0
-            )
 
     private fun loadMap() {
         val gameMap: GameMap = gameRunner.heroVisibleMap()
 
-        val metaStrategy = PickRandomMetaStrategy()
+        for (x in 0 until imageSize.columns) {
+            for (y in 0 until imageSize.rows) {
+                val gameMapPosition = GameMapPosition(
+                        x - offset.first,
+                        y - offset.second
+                )
 
-        for (x in 0 until virtualGameAreaSize.columns) {
-            for (y in 0 until virtualGameAreaSize.rows) {
-                val gameAreaPosition =
-                        Position3D.from2DPosition(
-                                Position.of(x, y),
-                                0
-                        )
-                val gameMapPosition = Position.of(x, y).toGameMapPosition()
-
-                val char = gameMap[gameMapPosition].char
-
-                gameArea.setCharacterAt(
-                        gameAreaPosition,
-                        0,
-                        TextCharacterBuilder
-                                .newBuilder()
-                                .character(char)
-                                .build()
+                fieldTextImage.setCharacterAt(
+                        Position.of(x, y),
+                        gameMap[gameMapPosition].char
                 )
             }
         }
@@ -121,23 +71,27 @@ internal class GameField(
 
     private fun loadCreatures() {
         for ((position, creatures) in gameRunner.creatureManager.creatures) {
+            val fieldGameMapPosition = GameMapPosition(
+                    position.first + offset.first,
+                    position.second + offset.second
+            )
+            if (fieldGameMapPosition.first < 0 ||
+                    fieldGameMapPosition.second < 0) {
+                continue
+            }
+            val fieldPosition = fieldGameMapPosition.let { Position.of(it.first, it.second) }
+            if (!fieldTextImage.containsPosition(fieldPosition)) {
+                continue
+            }
             if (gameRunner.creatureManager.heroPosition == position) {
-                gameArea.setCharacterAt(
-                        fromGameMapPosition(position),
-                        0,
-                        TextCharacterBuilder
-                                .newBuilder()
-                                .character(64.toChar())
-                                .build()
+                fieldTextImage.setCharacterAt(
+                        fieldPosition,
+                        64.toChar()
                 )
             } else if (creatures.isNotEmpty()) {
-                gameArea.setCharacterAt(
-                        fromGameMapPosition(position),
-                        0,
-                        TextCharacterBuilder
-                                .newBuilder()
-                                .character(159.toChar())
-                                .build()
+                fieldTextImage.setCharacterAt(
+                        fieldPosition,
+                        159.toChar()
                 )
             }
         }
@@ -146,5 +100,8 @@ internal class GameField(
     override fun refresh() {
         loadMap()
         loadCreatures()
+        gameScreen.removeLayer(fieldLayer)
+        fieldLayer = constructLayerFromImage()
+        gameScreen.pushLayer(fieldLayer)
     }
 }

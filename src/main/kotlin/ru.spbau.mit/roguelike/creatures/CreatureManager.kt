@@ -56,7 +56,7 @@ class CreatureManager(
         }
 
         internalCreatures[position]!!.remove(creature)
-        internalCreatures[newPosition]!!.add(creature)
+        internalCreatures.getOrPut(newPosition, { mutableSetOf() }).add(creature)
         if (creature is Hero) {
             heroPosition += direction
         }

@@ -2,13 +2,11 @@ package ru.spbau.mit.roguelike.ui.cli.setup
 
 import org.codetome.zircon.api.Position
 import org.codetome.zircon.api.Size
-import org.codetome.zircon.api.builder.LayerBuilder
 import org.codetome.zircon.api.builder.TerminalBuilder
-import org.codetome.zircon.api.builder.TextCharacterStringBuilder
-import org.codetome.zircon.api.graphics.Layer
 import org.codetome.zircon.api.input.InputType
 import org.codetome.zircon.api.screen.Screen
-import org.codetome.zircon.internal.component.impl.DefaultGameComponent
+import ru.spbau.mit.roguelike.creatures.Direction
+import ru.spbau.mit.roguelike.creatures.Move
 import ru.spbau.mit.roguelike.runner.GameRunner
 import ru.spbau.mit.roguelike.ui.cli.CLIGameUI
 import ru.spbau.mit.roguelike.ui.cli.setup.field.GameField
@@ -103,51 +101,23 @@ fun CLIGameUI.setupGameFieldScreen(gameRunner: GameRunner): Screen {
 
     components += gameField
 
-    enableMovement(screen, gameField.gameComponent)
-
-    return screen
-}
-
-private fun enableMovement(
-        screen: Screen,
-        gameComponent: DefaultGameComponent
-) {
-    fun buildCoordinateLayer(): Layer {
-        val visibleOffset = gameComponent.getVisibleOffset()
-
-        return LayerBuilder.newBuilder()
-                .textImage(TextCharacterStringBuilder.newBuilder()
-                        .text(String.format(
-                                "Position: (x=%s, y=%s)",
-                                visibleOffset.x,
-                                visibleOffset.y
-                        ))
-                        .build()
-                        .toTextImage()
-                )
-                .offset(screen
-                        .getBoundableSize()
-                        .fetchBottomLeftPosition()
-                        .withRelativeRow(-1)
-                        .withRelativeColumn(1)
-                )
-                .build()
-    }
-
-    var coordinateLayer: Layer = buildCoordinateLayer()
-    screen.pushLayer(coordinateLayer)
-
     screen.onInput(Consumer { input ->
-        when (input.getInputType()) {
-            InputType.ArrowUp    -> gameComponent.scrollOneBackward()
-            InputType.ArrowDown  -> gameComponent.scrollOneForward()
-            InputType.ArrowLeft  -> gameComponent.scrollOneLeft()
-            InputType.ArrowRight -> gameComponent.scrollOneRight()
-            else                 -> {} // no action
+        println(input)
+        println(continuation)
+        if (continuation != null) {
+            val action = when (input.getInputType()) {
+                InputType.ArrowUp    -> Move(Direction.NORTH)
+                InputType.ArrowDown  -> Move(Direction.SOUTH)
+                InputType.ArrowLeft  -> Move(Direction.WEST)
+                InputType.ArrowRight -> Move(Direction.EAST)
+                else                 -> return@Consumer
+            }
+            val copy = continuation
+            continuation = null
+            copy?.resume(action)
         }
-        screen.removeLayer(coordinateLayer)
-        coordinateLayer = buildCoordinateLayer()
-        screen.pushLayer(coordinateLayer)
         refresh()
     })
+
+    return screen
 }

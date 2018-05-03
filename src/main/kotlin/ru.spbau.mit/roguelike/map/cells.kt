@@ -19,13 +19,13 @@ sealed class ImpassableCell: TerrainCell()
 object WorldEntrance: PassableCell(emptySet()) {
     override fun interact() = NoInteraction
 
-    override val char: Char = 16.toChar()
+    override val char: Char = 'e'
 }
 
 object WorldExit: ImpassableCell() {
     override fun interact() = GameFinish
 
-    override val char: Char = 17.toChar()
+    override val char: Char = 'E'
 }
 
 object WallCell: ImpassableCell() {
