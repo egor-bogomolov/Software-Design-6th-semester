@@ -146,6 +146,5 @@ private fun enableMovement(
         screen.removeLayer(coordinateLayer)
         coordinateLayer = buildCoordinateLayer()
         screen.pushLayer(coordinateLayer)
-        screen.display()
     })
 }

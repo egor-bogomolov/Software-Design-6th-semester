@@ -1,6 +1,7 @@
 package ru.spbau.mit.roguelike.ui.cli
 
 import org.codetome.zircon.api.Size
+import org.codetome.zircon.api.builder.DeviceConfigurationBuilder
 import org.codetome.zircon.api.builder.TerminalBuilder
 import org.codetome.zircon.api.resource.CP437TilesetResource
 import org.codetome.zircon.api.resource.ColorThemeResource

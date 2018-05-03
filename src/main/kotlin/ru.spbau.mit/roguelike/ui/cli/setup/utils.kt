@@ -4,6 +4,7 @@ import org.codetome.zircon.api.Position
 import org.codetome.zircon.api.Size
 import org.codetome.zircon.api.builder.LayerBuilder
 import org.codetome.zircon.api.builder.TextCharacterStringBuilder
+import org.codetome.zircon.api.builder.TextImageBuilder
 import org.codetome.zircon.api.color.TextColorFactory
 import org.codetome.zircon.api.component.Panel
 import org.codetome.zircon.api.component.builder.ButtonBuilder
@@ -44,18 +45,24 @@ internal class MouseEventHandler(
 internal fun itemInfoLayer(
         position: Position,
         item: Item
-): Layer =
-        LayerBuilder.newBuilder()
-                .offset(position)
-                .textImage(
-                        TextCharacterStringBuilder.newBuilder()
-                                .backgroundColor(TextColorFactory.DEFAULT_BACKGROUND_COLOR)
-                                .foregroundColor(TextColorFactory.fromString("#aaaadd"))
-                                .text(item.detailedInfo())
-                                .build()
-                                .toTextImage()
-                )
-                .build()
+): Layer {
+    val lines = item.detailedInfo().lines()
+    val width = lines.map { it.length }.max() ?: 0
+    val height = lines.count()
+
+    val textImage = TextImageBuilder.newBuilder()
+            .size(Size.of(width, height))
+            .build()
+
+    for ((index, line) in lines.withIndex()) {
+        textImage.putText(line, Position.TOP_LEFT_CORNER.withRow(index))
+    }
+
+    return LayerBuilder.newBuilder()
+            .offset(position)
+            .textImage(textImage)
+            .build()
+}
 
 internal val panelTemplate = PanelBuilder
         .newBuilder()
