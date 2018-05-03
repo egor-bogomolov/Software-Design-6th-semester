@@ -3,9 +3,7 @@ package ru.spbau.mit.roguelike.ui.cli.setup
 import org.codetome.zircon.api.Position
 import org.codetome.zircon.api.Size
 import org.codetome.zircon.api.builder.LayerBuilder
-import org.codetome.zircon.api.builder.TextCharacterStringBuilder
 import org.codetome.zircon.api.builder.TextImageBuilder
-import org.codetome.zircon.api.color.TextColorFactory
 import org.codetome.zircon.api.component.Panel
 import org.codetome.zircon.api.component.builder.ButtonBuilder
 import org.codetome.zircon.api.component.builder.PanelBuilder
@@ -19,7 +17,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 internal class MouseEventHandler(
-        val body: (MouseAction) -> Unit
+        private val body: (MouseAction) -> Unit
 ): Consumer<MouseAction> {
     private var lastMouseEventTime: Long = 0
 
@@ -38,7 +36,7 @@ internal class MouseEventHandler(
     }
 
     companion object {
-        const val MOUSE_EVENT_DELAY: Long = 30
+        const val MOUSE_EVENT_DELAY: Long = 3
     }
 }
 

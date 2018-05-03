@@ -15,6 +15,7 @@ internal abstract class GameScreenComponent(
         val gameRunner: GameRunner,
         val refreshCallback: () -> Unit
 ) {
+
     protected val panelBuilder = PanelBuilder.newBuilder()
             .size(size)
             .position(position)
@@ -22,5 +23,6 @@ internal abstract class GameScreenComponent(
             .boxType(BoxType.TOP_BOTTOM_DOUBLE)
 
     abstract val panel: Panel
+
     abstract fun refresh()
 }

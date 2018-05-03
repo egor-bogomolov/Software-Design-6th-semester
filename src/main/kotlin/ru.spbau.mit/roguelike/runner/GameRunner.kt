@@ -17,7 +17,7 @@ class GameRunner(
 ) {
     val gameMap: GameMap = mapGenerator.generateMap(settings)
 
-    private val creatureManager: CreatureManager =
+    val creatureManager: CreatureManager =
             CreatureManager(
                     hero,
                     creatureGenerator.generateCreatures(settings, gameMap),
@@ -29,6 +29,9 @@ class GameRunner(
 
     private fun visibleMap(position: Pair<Int,Int>): GameMap =
             gameMap // TODO("think about field of view limitation")
+
+    fun heroVisibleMap(): GameMap =
+            visibleMap(creatureManager.heroPosition)
 
     private suspend fun processAction(
             position: Pair<Int, Int>,

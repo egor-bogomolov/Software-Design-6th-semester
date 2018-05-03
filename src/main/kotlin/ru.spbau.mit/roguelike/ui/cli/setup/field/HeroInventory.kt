@@ -3,12 +3,12 @@ package ru.spbau.mit.roguelike.ui.cli.setup.field
 import org.codetome.zircon.api.Position
 import org.codetome.zircon.api.Size
 import org.codetome.zircon.api.component.Panel
-import org.codetome.zircon.api.component.TextBox
-import org.codetome.zircon.api.component.builder.ButtonBuilder
 import org.codetome.zircon.api.component.builder.TextBoxBuilder
 import org.codetome.zircon.api.graphics.Layer
 import org.codetome.zircon.api.input.MouseActionType
 import org.codetome.zircon.api.screen.Screen
+import org.codetome.zircon.internal.component.impl.DefaultButton
+import org.codetome.zircon.internal.component.impl.DefaultTextBox
 import ru.spbau.mit.roguelike.runner.GameRunner
 import ru.spbau.mit.roguelike.ui.cli.setup.MouseEventHandler
 import ru.spbau.mit.roguelike.ui.cli.setup.itemInfoLayer
@@ -31,54 +31,20 @@ internal class HeroInventory(
     private val maxScroll: Int
         get() = max(0, gameRunner.hero.backpack.size - lines)
 
-    private val scrollUpButton = ButtonBuilder.newBuilder()
-            .text("Scroll up")
-            .build()
-
-    private val textBox: TextBox = TextBoxBuilder.newBuilder()
-            .position(Position
-                    .of(0, 0)
-                    .relativeToBottomOf(scrollUpButton)
-            )
-            .size(panel
-                    .getEffectiveSize()
-                    .withRelativeRows(-2)
-            )
-            .build()
-
-    private val scrollDownButton = ButtonBuilder.newBuilder()
-            .position(Position
-                    .of(0, 0)
-                    .relativeToBottomOf(textBox)
-            )
-            .text("Scroll down")
-            .build()
+    private val textBox: DefaultTextBox = TextBoxBuilder.newBuilder()
+            .size(panel.getEffectiveSize())
+            .build() as DefaultTextBox
 
     private var displayedLayer: Layer? = null
 
     init {
-        panel.addComponent(scrollUpButton)
         panel.addComponent(textBox)
-        panel.addComponent(scrollDownButton)
 
         textBox.disable()
 
         gameScreen.addComponent(panel)
 
-        scrollUpButton.onMouseReleased(MouseEventHandler {
-            scroll = max(0, scroll - 1)
-            refresh()
-            gameScreen.display()
-        })
-
-        scrollDownButton.onMouseReleased(MouseEventHandler {
-            scroll = min(maxScroll, scroll + 1)
-            refresh()
-            gameScreen.display()
-        })
-
-        textBox.onMouseMoved(MouseEventHandler {
-            println("Move: $it")
+        panel.onMouseMoved(MouseEventHandler {
             if (it.actionType == MouseActionType.MOUSE_EXITED) {
                 removeDisplayedLayer()
             } else {
@@ -87,15 +53,15 @@ internal class HeroInventory(
             gameScreen.display()
         })
 
-        textBox.onMousePressed(MouseEventHandler {
-            println("Press: $it")
-        })
+        DefaultButton
 
         textBox.onMouseReleased(MouseEventHandler {
             println("Release: $it")
             when (it.button) {
                 1 -> gameRunner.hero.equipItem(scroll + getRow(it.position))
                 2 -> gameRunner.hero.dropItem(scroll + getRow(it.position)) // TODO("implement drop to map cell")
+                4 -> scroll = max(0, scroll - 1)
+                5 -> scroll = min(maxScroll, scroll + 1)
             }
             refreshCallback()
         })
