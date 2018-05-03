@@ -32,11 +32,11 @@ abstract class Hero(
     var totalStats: BasicStats = stats.basicStats
         private set
 
-    private val internalBackpack: MutableList<Item>
-        get() = emptyList<Item>().toMutableList()
+    private val internalBackpack: MutableList<Item> =
+            mutableListOf()
 
-    private val internalEquipment: MutableMap<Equipment.Slot,Equipment>
-        get() = emptyMap<Equipment.Slot,Equipment>().toMutableMap()
+    private val internalEquipment: MutableMap<Equipment.Slot,Equipment> =
+            mutableMapOf()
 
     override fun takeItem(item: Item) {
         internalBackpack.add(item)

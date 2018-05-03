@@ -19,8 +19,9 @@ internal class HeroEquipment(
         position: Position,
         size: Size,
         gameScreen: Screen,
-        gameRunner: GameRunner
-): GameScreenComponent(position, size, gameScreen, gameRunner) {
+        gameRunner: GameRunner,
+        refreshCallback: () -> Unit
+): GameScreenComponent(position, size, gameScreen, gameRunner, refreshCallback) {
     override val panel: Panel = panelBuilder
             .title("Equipment")
             .build()
@@ -65,24 +66,21 @@ internal class HeroEquipment(
                 when (it.actionType) {
                     MouseActionType.MOUSE_ENTERED -> equipmentInfo[slot]?.let {
                         gameScreen.pushLayer(it)
-                        gameScreen.refresh()
                     }
                     MouseActionType.MOUSE_EXITED -> equipmentInfo[slot]?.let {
                         gameScreen.removeLayer(it)
-                        gameScreen.refresh()
                     }
                     else -> {} // no action
                 }
+                refreshCallback()
             })
             textBox.onMouseReleased(Consumer {
                 gameRunner.hero.unequipItem(slot)
                 equipmentInfo[slot]?.let {
                     gameScreen.removeLayer(it)
-                    gameScreen.refresh()
                 }
                 equipmentInfo[slot] = EMPTY_LAYER
-                refresh()
-                gameScreen.refresh()
+                refreshCallback()
             })
             equipmentText[slot] = textBox
         }

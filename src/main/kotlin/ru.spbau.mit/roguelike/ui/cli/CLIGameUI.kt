@@ -5,7 +5,9 @@ import org.codetome.zircon.api.builder.TerminalBuilder
 import org.codetome.zircon.api.resource.CP437TilesetResource
 import org.codetome.zircon.api.resource.ColorThemeResource
 import ru.spbau.mit.roguelike.creatures.CreatureAction
+import ru.spbau.mit.roguelike.creatures.hero.BasicStats
 import ru.spbau.mit.roguelike.creatures.hero.Hero
+import ru.spbau.mit.roguelike.items.Equipment
 import ru.spbau.mit.roguelike.items.Item
 import ru.spbau.mit.roguelike.map.GameMap
 import ru.spbau.mit.roguelike.runner.EmptyMapGenerator
@@ -35,6 +37,19 @@ object CLIGameUI: GameUI(EmptyMapGenerator, NoCreatureGenerator) {
             .build()
 
     internal class CLIHero(name: String) : Hero(name) {
+        init {
+            for (i in 1..30) {
+                takeItem(
+                        Equipment(
+                                "Viking helmet $i",
+                                "No one know what it is doing here",
+                                Equipment.Slot.HELMET,
+                                BasicStats()
+                        )
+                )
+            }
+        }
+
         override suspend fun askAction(visibleMap: GameMap) =
                 suspendCoroutine<CreatureAction> { continuation = it }
 

@@ -10,11 +10,36 @@ import org.codetome.zircon.api.component.builder.ButtonBuilder
 import org.codetome.zircon.api.component.builder.PanelBuilder
 import org.codetome.zircon.api.component.builder.TextBoxBuilder
 import org.codetome.zircon.api.graphics.Layer
+import org.codetome.zircon.api.input.MouseAction
 import org.codetome.zircon.api.screen.Screen
 import ru.spbau.mit.roguelike.items.Item
 import java.util.function.Consumer
 import kotlin.math.max
 import kotlin.math.min
+
+internal class MouseEventHandler(
+        val body: (MouseAction) -> Unit
+): Consumer<MouseAction> {
+    private var lastMouseEventTime: Long = 0
+
+    private fun checkDelay(currentTime: Long): Boolean =
+            if (currentTime < lastMouseEventTime + MOUSE_EVENT_DELAY) {
+                false
+            } else {
+                lastMouseEventTime = currentTime
+                true
+            }
+
+    override fun accept(mouseAction: MouseAction) {
+        if (checkDelay(mouseAction.getEventTime())) {
+            body(mouseAction)
+        }
+    }
+
+    companion object {
+        const val MOUSE_EVENT_DELAY: Long = 30
+    }
+}
 
 internal fun itemInfoLayer(
         position: Position,

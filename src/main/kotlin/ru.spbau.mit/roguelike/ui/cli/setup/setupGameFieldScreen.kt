@@ -10,21 +10,28 @@ import org.codetome.zircon.api.builder.TextCharacterStringBuilder
 import org.codetome.zircon.api.color.TextColorFactory
 import org.codetome.zircon.api.game.GameArea
 import org.codetome.zircon.api.game.Position3D
+import org.codetome.zircon.api.graphics.Layer
 import org.codetome.zircon.api.input.InputType
 import org.codetome.zircon.api.screen.Screen
 import org.codetome.zircon.internal.component.impl.DefaultGameComponent
 import ru.spbau.mit.roguelike.runner.GameRunner
 import ru.spbau.mit.roguelike.ui.cli.CLIGameUI
-import ru.spbau.mit.roguelike.ui.cli.setup.field.GameField
-import ru.spbau.mit.roguelike.ui.cli.setup.field.HeroEquipment
-import ru.spbau.mit.roguelike.ui.cli.setup.field.HeroInfo
-import ru.spbau.mit.roguelike.ui.cli.setup.field.HeroInventory
+import ru.spbau.mit.roguelike.ui.cli.setup.field.*
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.Consumer
 
 fun CLIGameUI.setupGameFieldScreen(gameRunner: GameRunner): Screen {
     val screen = TerminalBuilder.createScreenFor(terminal)
     screen.setCursorVisibility(false) // we don't want the cursor right now
+
+    val components: MutableList<GameScreenComponent> = mutableListOf()
+
+    val refresh = {
+        for (component in components) {
+            component.refresh()
+        }
+        screen.display()
+    }
 
     val heroInfo = HeroInfo(
             Position.DEFAULT_POSITION,
@@ -33,15 +40,21 @@ fun CLIGameUI.setupGameFieldScreen(gameRunner: GameRunner): Screen {
                     8
             ),
             screen,
-            gameRunner
+            gameRunner,
+            refresh
     )
+
+    components += heroInfo
 
     val heroEquipment = HeroEquipment(
             Position.of(0, 0).relativeToBottomOf(heroInfo.panel),
             heroInfo.panel.getBoundableSize().withRows(8),
             screen,
-            gameRunner
+            gameRunner,
+            refresh
     )
+
+    components += heroEquipment
 
     val heroInventory = HeroInventory(
             Position.of(0, 0).relativeToBottomOf(heroEquipment.panel),
@@ -51,8 +64,11 @@ fun CLIGameUI.setupGameFieldScreen(gameRunner: GameRunner): Screen {
                             heroEquipment.panel.getBoundableSize().rows
             ),
             screen,
-            gameRunner
+            gameRunner,
+            refresh
     )
+
+    components += heroInventory
 
     val gameField = GameField(
             Position
@@ -64,8 +80,11 @@ fun CLIGameUI.setupGameFieldScreen(gameRunner: GameRunner): Screen {
                             -heroInfo.panel.getBoundableSize().columns
                     ),
             screen,
-            gameRunner
+            gameRunner,
+            refresh
     )
+
+    components += gameField
 
     enableMovement(screen, gameField.gameComponent, gameRunner)
     generatePyramid(3, Position3D.of(5, 5, 2), gameField.gameArea)
@@ -96,30 +115,37 @@ private fun enableMovement(
         gameComponent: DefaultGameComponent,
         gameRunner: GameRunner
 ) {
+    val visibleOffset = gameComponent.getVisibleOffset()
+
+    fun buildCoordinateLayer(): Layer =
+            LayerBuilder.newBuilder()
+                    .textImage(TextCharacterStringBuilder.newBuilder()
+                            .backgroundColor(TextColorFactory.TRANSPARENT)
+                            .foregroundColor(TextColorFactory.fromString("#aaaadd"))
+                            .text(String.format(
+                                    "Position: (x=%s, y=%s)",
+                                    visibleOffset.x,
+                                    visibleOffset.y
+                            ))
+                            .build()
+                            .toTextImage()
+                    )
+                    .offset(Position.of(24, 1))
+                    .build()
+
+    var coordinateLayer: Layer = buildCoordinateLayer()
+
     screen.onInput(Consumer { input ->
-        if (InputType.ArrowUp == input.getInputType()) {
-            gameComponent.scrollOneBackward()
+        when (input.getInputType()) {
+            InputType.ArrowUp    -> gameComponent.scrollOneBackward()
+            InputType.ArrowDown  -> gameComponent.scrollOneForward()
+            InputType.ArrowLeft  -> gameComponent.scrollOneLeft()
+            InputType.ArrowRight -> gameComponent.scrollOneRight()
+            else                 -> {} // no action
         }
-        if (InputType.ArrowDown == input.getInputType()) {
-            gameComponent.scrollOneForward()
-        }
-        if (InputType.ArrowLeft == input.getInputType()) {
-            gameComponent.scrollOneLeft()
-        }
-        if (InputType.ArrowRight == input.getInputType()) {
-            gameComponent.scrollOneRight()
-        }
-        screen.drainLayers()
-        val visibleOffset = gameComponent.getVisibleOffset()
-        screen.pushLayer(LayerBuilder.newBuilder()
-                .textImage(TextCharacterStringBuilder.newBuilder()
-                        .backgroundColor(TextColorFactory.TRANSPARENT)
-                        .foregroundColor(TextColorFactory.fromString("#aaaadd"))
-                        .text(String.format("Position: (x=%s, y=%s, z=%s)", visibleOffset.x, visibleOffset.y, visibleOffset.z))
-                        .build()
-                        .toTextImage())
-                .offset(Position.of(22, 1))
-                .build())
-        screen.refresh()
+        screen.removeLayer(coordinateLayer)
+        coordinateLayer = buildCoordinateLayer()
+        screen.pushLayer(coordinateLayer)
+        screen.display()
     })
 }

@@ -17,8 +17,9 @@ internal class GameField(
         position: Position,
         size: Size,
         gameScreen: Screen,
-        gameRunner: GameRunner
-) : GameScreenComponent(position, size, gameScreen, gameRunner) {
+        gameRunner: GameRunner,
+        refreshCallback: () -> Unit
+): GameScreenComponent(position, size, gameScreen, gameRunner, refreshCallback) {
     override val panel = panelBuilder
             .title("Game field")
             .build()
