@@ -10,12 +10,29 @@ import org.codetome.zircon.api.component.builder.ButtonBuilder
 import org.codetome.zircon.api.component.builder.PanelBuilder
 import org.codetome.zircon.api.component.builder.TextBoxBuilder
 import org.codetome.zircon.api.graphics.Layer
+import org.codetome.zircon.api.input.Input
 import org.codetome.zircon.api.input.MouseAction
 import org.codetome.zircon.api.screen.Screen
 import ru.spbau.mit.roguelike.items.Item
+import java.util.*
 import java.util.function.Consumer
 import kotlin.math.max
 import kotlin.math.min
+
+private var activeScreenId: UUID? = null
+
+fun Screen.activate() {
+    activeScreenId = getId()
+    display()
+}
+
+fun Screen.ifActiveOnInput(
+        body: (Input) -> Unit
+) = onInput(Consumer { input ->
+    if (activeScreenId == getId()) {
+        body(input)
+    }
+})
 
 internal class MouseEventHandler(
         private val body: (MouseAction) -> Unit

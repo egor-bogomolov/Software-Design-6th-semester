@@ -54,6 +54,7 @@ internal class HeroInventory(
                 val index = scroll + row
                 if (index < gameRunner.hero.backpack.size) {
                     gameRunner.hero.equipItem(index)
+                    scroll = min(scroll, maxScroll)
                     refreshCallback()
                 }
             }
@@ -78,8 +79,6 @@ internal class HeroInventory(
         for (layer in itemInfoLayers) {
             gameScreen.removeLayer(layer)
         }
-
-        scroll = min(scroll, maxScroll)
 
         for ((row, item) in gameRunner.hero.backpack
                 .drop(scroll)

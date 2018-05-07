@@ -11,7 +11,6 @@ import ru.spbau.mit.roguelike.ui.cli.CLIGameUI
 import ru.spbau.mit.roguelike.ui.cli.setup.field.GameScreenComponent
 import ru.spbau.mit.roguelike.ui.cli.setup.field.HeroEquipment
 import ru.spbau.mit.roguelike.ui.cli.setup.field.HeroInventory
-import java.util.function.Consumer
 
 internal fun CLIGameUI.setupHeroInventoryScreen(
         returnToScreen: Screen,
@@ -52,11 +51,10 @@ internal fun CLIGameUI.setupHeroInventoryScreen(
 
     components += heroInventory
 
-    screen.onInput(Consumer { input ->
+    screen.ifActiveOnInput { input ->
         val mouseAction by lazy { input.asMouseAction() }
         if (input.getInputType() == InputType.Escape) {
-            returnToScreen.display()
-            screen.close()
+            returnToScreen.activate()
         } else if (input.isMouseAction() &&
                 mouseAction.actionType == MouseActionType.MOUSE_MOVED) {
             activeInfoLayer?.let(screen::removeLayer)
@@ -68,7 +66,7 @@ internal fun CLIGameUI.setupHeroInventoryScreen(
             activeInfoLayer?.let(screen::pushLayer)
             screen.display()
         }
-    })
+    }
 
     return screen
 }

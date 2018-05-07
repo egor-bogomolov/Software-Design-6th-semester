@@ -1,19 +1,21 @@
 package ru.spbau.mit.roguelike.ui.cli.setup
 
+import kotlinx.coroutines.experimental.runBlocking
 import org.codetome.zircon.api.Position
 import org.codetome.zircon.api.Size
 import org.codetome.zircon.api.builder.TerminalBuilder
 import org.codetome.zircon.api.input.InputType
 import org.codetome.zircon.api.screen.Screen
-import ru.spbau.mit.roguelike.creatures.Direction
-import ru.spbau.mit.roguelike.creatures.Move
+import ru.spbau.mit.roguelike.creatures.*
+import ru.spbau.mit.roguelike.map.plus
 import ru.spbau.mit.roguelike.runner.GameRunner
 import ru.spbau.mit.roguelike.ui.cli.CLIGameUI
 import ru.spbau.mit.roguelike.ui.cli.setup.field.GameField
 import ru.spbau.mit.roguelike.ui.cli.setup.field.GameLog
 import ru.spbau.mit.roguelike.ui.cli.setup.field.GameScreenComponent
 import ru.spbau.mit.roguelike.ui.cli.setup.field.HeroInfo
-import java.util.function.Consumer
+import kotlin.coroutines.experimental.Continuation
+import kotlin.coroutines.experimental.suspendCoroutine
 
 fun CLIGameUI.setupGameFieldScreen(gameRunner: GameRunner): Screen {
     val screen = TerminalBuilder.createScreenFor(terminal)
@@ -75,28 +77,76 @@ fun CLIGameUI.setupGameFieldScreen(gameRunner: GameRunner): Screen {
 
     components += gameField
 
-    screen.onInput(Consumer { input ->
+    val heroInventoryScreen = setupHeroInventoryScreen(
+            screen,
+            gameRunner
+    )
+
+    var actionMode: (Direction) -> DirectedAction = ::Move
+
+    val helpLayer = setupHelpLayer(
+            gameField.panel.getPosition().withRelative(Position.OFFSET_1x1),
+            gameField.panel.getEffectiveSize()
+    )
+
+    screen.ifActiveOnInput { input ->
         val keyStroke by lazy { input.asKeyStroke() }
         if (input.getInputType() == InputType.Character &&
-                keyStroke.getCharacter() == 'I') {
-            setupHeroInventoryScreen(
-                    screen,
-                    gameRunner
-            ).display()
-        } else if (continuation != null) {
-            val action = when (input.getInputType()) {
-                InputType.ArrowUp    -> Move(Direction.NORTH)
-                InputType.ArrowDown  -> Move(Direction.SOUTH)
-                InputType.ArrowLeft  -> Move(Direction.WEST)
-                InputType.ArrowRight -> Move(Direction.EAST)
-                else                 -> return@Consumer
+                keyStroke.getCharacter() != ' ') {
+            when (keyStroke.getCharacter()) {
+                '?' -> {
+                    screen.pushLayer(helpLayer)
+                    screen.display()
+                }
+                'I' -> heroInventoryScreen.activate()
+                'i' -> actionMode = ::Interact
+                'a' -> actionMode = { direction ->
+                    runBlocking {
+                        val attacked = suspendCoroutine<Creature> {
+                            setupAttackTargetDialog(
+                                    screen,
+                                    gameRunner,
+                                    gameRunner.creatureManager.heroPosition + direction,
+                                    it
+                            ).activate()
+                        }
+                        Attack(direction, attacked)
+                    }
+                }
+                'm' -> actionMode = ::Move
             }
+        } else if (continuation != null) {
+            val action = actionMode(
+                    when (input.getInputType()) {
+                        InputType.ArrowUp    -> Direction.NORTH
+                        InputType.ArrowDown  -> Direction.SOUTH
+                        InputType.ArrowLeft  -> Direction.WEST
+                        InputType.ArrowRight -> Direction.EAST
+                        InputType.Escape     -> {
+                            screen.removeLayer(helpLayer)
+                            screen.display()
+                            return@ifActiveOnInput
+                        }
+                        InputType.Character  ->
+                            if (keyStroke.getCharacter() == ' ') {
+                                Direction.CURRENT
+                            } else {
+                                return@ifActiveOnInput
+                            }
+                        else                 -> return@ifActiveOnInput
+                    }
+            )
             val copy = continuation
+            actionMode = ::Move
             continuation = null
             copy?.resume(action)
             refresh()
         }
-    })
+    }
 
     return screen
+}
+
+fun setupAttackTargetDialog(screen: Screen, gameRunner: GameRunner, attackedCell: Pair<Int, Int>, continuation: Continuation<Creature>): Screen {
+    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
 }

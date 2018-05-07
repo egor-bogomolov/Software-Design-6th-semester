@@ -15,10 +15,7 @@ import ru.spbau.mit.roguelike.runner.GameRunner
 import ru.spbau.mit.roguelike.runner.GameSettings
 import ru.spbau.mit.roguelike.runner.NoCreatureGenerator
 import ru.spbau.mit.roguelike.ui.GameUI
-import ru.spbau.mit.roguelike.ui.cli.setup.setupGameFieldScreen
-import ru.spbau.mit.roguelike.ui.cli.setup.setupGameScreen
-import ru.spbau.mit.roguelike.ui.cli.setup.setupHeroScreen
-import ru.spbau.mit.roguelike.ui.cli.setup.showItemExchangeDialog
+import ru.spbau.mit.roguelike.ui.cli.setup.*
 import kotlin.coroutines.experimental.Continuation
 import kotlin.coroutines.experimental.suspendCoroutine
 
@@ -62,13 +59,13 @@ object CLIGameUI: GameUI(EmptyMapGenerator, NoCreatureGenerator) {
     override fun setupGame(settingsForwarder: Continuation<GameSettings>) {
         val gameSetupScreen = setupGameScreen(settingsForwarder)
         gameSetupScreen.applyColorTheme(colorTheme)
-        gameSetupScreen.display()
+        gameSetupScreen.activate()
     }
 
     override fun setupHero(heroForwarder: Continuation<Hero>) {
         val heroSetupScreen = setupHeroScreen(heroForwarder)
         heroSetupScreen.applyColorTheme(colorTheme)
-        heroSetupScreen.display()
+        heroSetupScreen.activate()
     }
 
     override fun runGame(
@@ -76,7 +73,7 @@ object CLIGameUI: GameUI(EmptyMapGenerator, NoCreatureGenerator) {
     ) {
         val gameField = setupGameFieldScreen(gameRunner)
         gameField.applyColorTheme(colorTheme)
-        gameField.display()
+        gameField.activate()
         while (!gameRunner.gameFinished) {
             gameRunner.nextTurn()
         }
