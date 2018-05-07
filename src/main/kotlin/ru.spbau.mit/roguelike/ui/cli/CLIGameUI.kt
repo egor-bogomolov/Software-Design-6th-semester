@@ -1,7 +1,6 @@
 package ru.spbau.mit.roguelike.ui.cli
 
 import org.codetome.zircon.api.Size
-import org.codetome.zircon.api.builder.DeviceConfigurationBuilder
 import org.codetome.zircon.api.builder.TerminalBuilder
 import org.codetome.zircon.api.resource.CP437TilesetResource
 import org.codetome.zircon.api.resource.ColorThemeResource
@@ -39,11 +38,11 @@ object CLIGameUI: GameUI(EmptyMapGenerator, NoCreatureGenerator) {
 
     internal class CLIHero(name: String) : Hero(name) {
         init {
-            for (i in 1..30) {
+            for (i in 1..50) {
                 takeItem(
                         Equipment(
                                 "Viking helmet $i",
-                                "No one know what it is doing here",
+                                "No one knows what it is doing here",
                                 Equipment.Slot.HELMET,
                                 BasicStats()
                         )

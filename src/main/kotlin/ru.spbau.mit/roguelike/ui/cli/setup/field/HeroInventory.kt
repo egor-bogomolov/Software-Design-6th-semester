@@ -3,15 +3,15 @@ package ru.spbau.mit.roguelike.ui.cli.setup.field
 import org.codetome.zircon.api.Position
 import org.codetome.zircon.api.Size
 import org.codetome.zircon.api.component.Panel
+import org.codetome.zircon.api.component.TextBox
 import org.codetome.zircon.api.component.builder.TextBoxBuilder
 import org.codetome.zircon.api.graphics.Layer
-import org.codetome.zircon.api.input.MouseActionType
+import org.codetome.zircon.api.input.MouseAction
 import org.codetome.zircon.api.screen.Screen
-import org.codetome.zircon.internal.component.impl.DefaultButton
-import org.codetome.zircon.internal.component.impl.DefaultTextBox
 import ru.spbau.mit.roguelike.runner.GameRunner
 import ru.spbau.mit.roguelike.ui.cli.setup.MouseEventHandler
 import ru.spbau.mit.roguelike.ui.cli.setup.itemInfoLayer
+import java.util.function.Consumer
 import kotlin.math.max
 import kotlin.math.min
 
@@ -31,74 +31,78 @@ internal class HeroInventory(
     private val maxScroll: Int
         get() = max(0, gameRunner.hero.backpack.size - lines)
 
-    private val textBox: DefaultTextBox = TextBoxBuilder.newBuilder()
-            .size(panel.getEffectiveSize())
-            .build() as DefaultTextBox
+    private val scrollHandler = Consumer<MouseAction> {
+        scroll = when (it.button) {
+            4    -> max(0, scroll - 1)
+            5    -> min(maxScroll, scroll + 1)
+            else -> return@Consumer
+        }
+        refresh()
+        gameScreen.display()
+    }
 
-    private var displayedLayer: Layer? = null
-
-    init {
+    private val itemTextBoxes: Array<TextBox> = Array(lines) {row ->
+        val textBox = TextBoxBuilder.newBuilder()
+                .size(Size.of(panel.getEffectiveSize().columns, 1))
+                .position(Position.of(0, row))
+                .build()
+        textBox.disable()
         panel.addComponent(textBox)
 
-        textBox.disable()
-
-        gameScreen.addComponent(panel)
-
-        panel.onMouseMoved(MouseEventHandler {
-            if (it.actionType == MouseActionType.MOUSE_EXITED) {
-                removeDisplayedLayer()
-            } else {
-                updateDisplayedLayer(getRow(it.position))
-            }
-            gameScreen.display()
-        })
-
-        DefaultButton
-
         textBox.onMouseReleased(MouseEventHandler {
-            println("Release: $it")
-            when (it.button) {
-                1 -> gameRunner.hero.equipItem(scroll + getRow(it.position))
-                2 -> gameRunner.hero.dropItem(scroll + getRow(it.position)) // TODO("implement drop to map cell")
-                4 -> scroll = max(0, scroll - 1)
-                5 -> scroll = min(maxScroll, scroll + 1)
+            if (it.button == 1) {
+                val index = scroll + row
+                if (index < gameRunner.hero.backpack.size) {
+                    gameRunner.hero.equipItem(index)
+                    refreshCallback()
+                }
             }
-            refreshCallback()
-        })
+        }.andThen(scrollHandler))
 
+        return@Array textBox
+    }
+
+    private val itemInfoLayers: Array<Layer> = Array(lines) { EMPTY_LAYER }
+
+    init {
+        gameScreen.addComponent(panel)
         refresh()
-    }
 
-    private fun getRow(position: Position): Int =
-            (position - textBox.getPosition()).row
-
-    private fun removeDisplayedLayer() {
-        displayedLayer?.let { gameScreen.removeLayer(it) }
-    }
-
-    private fun updateDisplayedLayer(index: Int) {
-        if (index in 0..(lines - 1)) {
-            removeDisplayedLayer()
-            val newLayer = itemInfoLayer(
-                    Position.OFFSET_1x1
-                            .withRelativeRow(index),
-                    gameRunner.hero.backpack[index]
-            )
-            gameScreen.pushLayer(newLayer)
-            displayedLayer = newLayer
-            gameScreen.display()
-        }
+        panel.onMouseReleased(scrollHandler)
     }
 
     override fun refresh() {
-        removeDisplayedLayer()
-        displayedLayer?.let { gameScreen.pushLayer(it) }
-        textBox.setText(
-                gameRunner.hero.backpack
-                        .drop(scroll)
-                        .joinToString("\n") {
-                            it.name
-                        }
-        )
+        for (textBox in itemTextBoxes) {
+            textBox.setText("")
+        }
+        for (layer in itemInfoLayers) {
+            gameScreen.removeLayer(layer)
+        }
+
+        scroll = min(scroll, maxScroll)
+
+        for ((row, item) in gameRunner.hero.backpack
+                .drop(scroll)
+                .take(lines)
+                .withIndex()) {
+
+            itemTextBoxes[row].setText(item.name)
+
+            itemInfoLayers[row] = itemInfoLayer(
+                    panel.getEffectiveSize().columns - 1,
+                    Position.OFFSET_1x1
+                            .withRelative(itemTextBoxes[row].getPosition()),
+                    item
+            )
+        }
+    }
+
+    override fun onMouseMoved(position: Position): Layer? {
+        for (row in 0 until lines) {
+            if (itemTextBoxes[row].containsPosition(position)) {
+                return itemInfoLayers[row]
+            }
+        }
+        return null
     }
 }

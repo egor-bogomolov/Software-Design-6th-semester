@@ -15,15 +15,13 @@ import ru.spbau.mit.roguelike.ui.cli.setup.field.GameScreenComponent
 import ru.spbau.mit.roguelike.ui.cli.setup.field.HeroInfo
 import java.util.function.Consumer
 
-var refresh: () -> Unit = {}
-
 fun CLIGameUI.setupGameFieldScreen(gameRunner: GameRunner): Screen {
     val screen = TerminalBuilder.createScreenFor(terminal)
     screen.setCursorVisibility(false) // we don't want the cursor right now
 
     val components: MutableList<GameScreenComponent> = mutableListOf()
 
-    refresh = {
+    val refresh = {
         for (component in components) {
             component.refresh()
         }
@@ -42,30 +40,6 @@ fun CLIGameUI.setupGameFieldScreen(gameRunner: GameRunner): Screen {
     )
 
     components += heroInfo
-
-//    val heroEquipment = HeroEquipment(
-//            Position.of(0, 0).relativeToBottomOf(heroInfo.panel),
-//            heroInfo.panel.getBoundableSize().withRows(8),
-//            screen,
-//            gameRunner,
-//            refresh
-//    )
-//
-//    components += heroEquipment
-//
-//    val heroInventory = HeroInventory(
-//            Position.of(0, 0).relativeToBottomOf(heroEquipment.panel),
-//            heroInfo.panel.getBoundableSize().withRows(
-//                    screen.getBoundableSize().rows -
-//                            heroEquipment.panel.getPosition().row -
-//                            heroEquipment.panel.getBoundableSize().rows
-//            ),
-//            screen,
-//            gameRunner,
-//            refresh
-//    )
-//
-//    components += heroInventory
 
     val gameLog = GameLog(
             Position.of(0, 0)
@@ -102,9 +76,14 @@ fun CLIGameUI.setupGameFieldScreen(gameRunner: GameRunner): Screen {
     components += gameField
 
     screen.onInput(Consumer { input ->
-        println(input)
-        println(continuation)
-        if (continuation != null) {
+        val keyStroke by lazy { input.asKeyStroke() }
+        if (input.getInputType() == InputType.Character &&
+                keyStroke.getCharacter() == 'I') {
+            setupHeroInventoryScreen(
+                    screen,
+                    gameRunner
+            ).display()
+        } else if (continuation != null) {
             val action = when (input.getInputType()) {
                 InputType.ArrowUp    -> Move(Direction.NORTH)
                 InputType.ArrowDown  -> Move(Direction.SOUTH)
@@ -115,8 +94,8 @@ fun CLIGameUI.setupGameFieldScreen(gameRunner: GameRunner): Screen {
             val copy = continuation
             continuation = null
             copy?.resume(action)
+            refresh()
         }
-        refresh()
     })
 
     return screen

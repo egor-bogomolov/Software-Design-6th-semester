@@ -4,7 +4,16 @@ abstract class Item(
         val name: String,
         val description: String
 ) {
-    abstract fun detailedInfo(): String
+    protected abstract fun detailedInfo(): String
+
+    fun detailedInfo(lineWidth: Int): String =
+            detailedInfo()
+                    .lines()
+                    .joinToString("\n") { line ->
+                        line
+                                .chunked(lineWidth) { it }
+                                .joinToString("\n")
+                    }
 }
 
 class Junk(

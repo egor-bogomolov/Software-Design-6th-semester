@@ -3,6 +3,7 @@ package ru.spbau.mit.roguelike.ui.cli.setup
 import org.codetome.zircon.api.Position
 import org.codetome.zircon.api.Size
 import org.codetome.zircon.api.builder.LayerBuilder
+import org.codetome.zircon.api.builder.TextCharacterBuilder
 import org.codetome.zircon.api.builder.TextImageBuilder
 import org.codetome.zircon.api.component.Panel
 import org.codetome.zircon.api.component.builder.ButtonBuilder
@@ -41,19 +42,24 @@ internal class MouseEventHandler(
 }
 
 internal fun itemInfoLayer(
+        lineWidth: Int,
         position: Position,
         item: Item
 ): Layer {
-    val lines = item.detailedInfo().lines()
-    val width = lines.map { it.length }.max() ?: 0
-    val height = lines.count()
+    val baseOffset = Position.OFFSET_1x1
+
+    val lines = item.detailedInfo(lineWidth - 2 - baseOffset.column).lines()
+
+    val width = (lines.map { it.length }.max() ?: 0) + 2
+    val height = lines.count() + 2
 
     val textImage = TextImageBuilder.newBuilder()
+            .filler(TextCharacterBuilder.DEFAULT_CHARACTER)
             .size(Size.of(width, height))
             .build()
 
     for ((index, line) in lines.withIndex()) {
-        textImage.putText(line, Position.TOP_LEFT_CORNER.withRow(index))
+        textImage.putText(line, baseOffset.withRelativeRow(index))
     }
 
     return LayerBuilder.newBuilder()

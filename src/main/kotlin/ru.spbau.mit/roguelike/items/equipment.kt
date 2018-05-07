@@ -21,7 +21,7 @@ class Equipment(
     override fun detailedInfo(): String {
         val itemStats = BasicStats.Type
                 .values()
-                .joinToString("\n\t", "\t") {
+                .joinToString("\n") {
                     type -> "${formatEnumValue(type.name)}: ${stats[type]}"
                 }
         return """$name
