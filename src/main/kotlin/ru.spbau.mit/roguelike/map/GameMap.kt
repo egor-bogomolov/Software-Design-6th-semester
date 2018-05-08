@@ -2,8 +2,13 @@ package ru.spbau.mit.roguelike.map
 
 import ru.spbau.mit.roguelike.exceptions.GameMapHasNoEntranceException
 import ru.spbau.mit.roguelike.exceptions.GameMapMultipleEntrancesException
+import kotlin.math.abs
 
 typealias Position=Pair<Int,Int>
+
+fun Position.manhattanDistance(other: Position): Int =
+        abs(first - other.first) +
+                abs(second - other.second)
 
 class GameMap(cells: Map<Position,TerrainCell>) {
     private val cells = cells.toMutableMap()

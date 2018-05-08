@@ -10,8 +10,8 @@ import kotlin.coroutines.experimental.Continuation
 import kotlin.coroutines.experimental.suspendCoroutine
 
 abstract class GameUI(
-        internal val mapGenerator: GameMapGenerator,
-        internal val creatureGenerator: CreatureGenerator
+        private val mapGenerator: GameMapGenerator,
+        private val creatureGenerator: CreatureGenerator
 ) {
     internal abstract fun setupGame(
             settingsForwarder: Continuation<GameSettings>

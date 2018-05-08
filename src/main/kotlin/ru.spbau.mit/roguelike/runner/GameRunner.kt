@@ -4,10 +4,7 @@ import kotlinx.coroutines.experimental.runBlocking
 import ru.spbau.mit.roguelike.Logger
 import ru.spbau.mit.roguelike.creatures.*
 import ru.spbau.mit.roguelike.creatures.hero.Hero
-import ru.spbau.mit.roguelike.map.CanExchangeItems
-import ru.spbau.mit.roguelike.map.GameFinish
-import ru.spbau.mit.roguelike.map.GameMap
-import ru.spbau.mit.roguelike.map.plus
+import ru.spbau.mit.roguelike.map.*
 
 class GameRunner(
         val settings: GameSettings,
@@ -37,8 +34,16 @@ class GameRunner(
             position: Pair<Int, Int>,
             creature: Creature
     ) {
+        val visibleMap = visibleMap(position)
+
         val action: CreatureAction =
-                creature.askAction(visibleMap(position))
+                creature.askAction(
+                        position,
+                        visibleMap,
+                        creatureManager.creatures.filterKeys {
+                            visibleMap[it] !== UnseenCell
+                        }
+                )
         when (action) {
             is Move -> creatureManager.processMove(
                     creature,
@@ -77,8 +82,8 @@ class GameRunner(
                     creatureManager.heroPosition,
                     creatureManager.hero
             )
-            for ((position, creatures) in creatureManager.creatures) {
-                for (creature in creatures) {
+            for ((position, creatures) in creatureManager.creatures.toList()) {
+                for (creature in creatures.toList()) {
                     if (creature !is Hero) {
                         processAction(position, creature)
                     }

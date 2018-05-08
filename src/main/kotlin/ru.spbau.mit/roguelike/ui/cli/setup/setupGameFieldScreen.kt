@@ -14,7 +14,6 @@ import ru.spbau.mit.roguelike.ui.cli.setup.field.GameField
 import ru.spbau.mit.roguelike.ui.cli.setup.field.GameLog
 import ru.spbau.mit.roguelike.ui.cli.setup.field.GameScreenComponent
 import ru.spbau.mit.roguelike.ui.cli.setup.field.HeroInfo
-import kotlin.coroutines.experimental.Continuation
 import kotlin.coroutines.experimental.suspendCoroutine
 
 fun CLIGameUI.setupGameFieldScreen(gameRunner: GameRunner): Screen {
@@ -145,8 +144,4 @@ fun CLIGameUI.setupGameFieldScreen(gameRunner: GameRunner): Screen {
     }
 
     return screen
-}
-
-fun setupAttackTargetDialog(screen: Screen, gameRunner: GameRunner, attackedCell: Pair<Int, Int>, continuation: Continuation<Creature>): Screen {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
 }

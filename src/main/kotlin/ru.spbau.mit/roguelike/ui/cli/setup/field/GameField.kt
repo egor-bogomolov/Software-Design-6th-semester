@@ -11,6 +11,8 @@ import org.codetome.zircon.api.screen.Screen
 import ru.spbau.mit.roguelike.map.GameMap
 import ru.spbau.mit.roguelike.runner.GameRunner
 
+
+
 typealias GameMapPosition = ru.spbau.mit.roguelike.map.Position
 
 internal class GameField(
@@ -41,9 +43,9 @@ internal class GameField(
 
     private fun constructLayerFromImage(): Layer =
             LayerBuilder.newBuilder()
+                    .font(CP437TilesetResource.PHOEBUS_16X16.toFont())
                     .textImage(fieldTextImage)
                     .offset(panel.getPosition().withRelative(Position.OFFSET_1x1))
-                    .font(CP437TilesetResource.PHOEBUS_16X16.toFont())
                     .build()
 
     init {
@@ -91,7 +93,7 @@ internal class GameField(
             } else if (creatures.isNotEmpty()) {
                 fieldTextImage.setCharacterAt(
                         fieldPosition,
-                        159.toChar()
+                        249.toChar()
                 )
             }
         }

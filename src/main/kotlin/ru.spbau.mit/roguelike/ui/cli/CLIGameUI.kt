@@ -4,22 +4,24 @@ import org.codetome.zircon.api.Size
 import org.codetome.zircon.api.builder.TerminalBuilder
 import org.codetome.zircon.api.resource.CP437TilesetResource
 import org.codetome.zircon.api.resource.ColorThemeResource
+import ru.spbau.mit.roguelike.creatures.Creature
 import ru.spbau.mit.roguelike.creatures.CreatureAction
 import ru.spbau.mit.roguelike.creatures.hero.BasicStats
 import ru.spbau.mit.roguelike.creatures.hero.Hero
 import ru.spbau.mit.roguelike.items.Equipment
 import ru.spbau.mit.roguelike.items.Item
 import ru.spbau.mit.roguelike.map.GameMap
+import ru.spbau.mit.roguelike.map.Position
 import ru.spbau.mit.roguelike.runner.EmptyMapGenerator
 import ru.spbau.mit.roguelike.runner.GameRunner
 import ru.spbau.mit.roguelike.runner.GameSettings
-import ru.spbau.mit.roguelike.runner.NoCreatureGenerator
+import ru.spbau.mit.roguelike.runner.NGoblinsGenerator
 import ru.spbau.mit.roguelike.ui.GameUI
 import ru.spbau.mit.roguelike.ui.cli.setup.*
 import kotlin.coroutines.experimental.Continuation
 import kotlin.coroutines.experimental.suspendCoroutine
 
-object CLIGameUI: GameUI(EmptyMapGenerator, NoCreatureGenerator) {
+object CLIGameUI: GameUI(EmptyMapGenerator, NGoblinsGenerator(5)) {
     private val terminalSize = Size.of(80, 40)
     private val font = CP437TilesetResource.WANDERLUST_16X16.toFont()
     private val colorTheme = ColorThemeResource.SOLARIZED_DARK_ORANGE.getTheme()
@@ -47,7 +49,7 @@ object CLIGameUI: GameUI(EmptyMapGenerator, NoCreatureGenerator) {
             }
         }
 
-        override suspend fun askAction(visibleMap: GameMap) =
+        override suspend fun askAction(position: Position, visibleMap: GameMap, visibleCreatures: Map<Position, Set<Creature>>) =
                 suspendCoroutine<CreatureAction> { continuation = it }
 
         override suspend fun exchangeItems(items: MutableList<Item>) =
