@@ -94,5 +94,5 @@ abstract class Hero(
         dodgeParameter = BasicStats.DODGE_PARAMETER_PER_AGILITY * totalStats[BasicStats.Type.AGILITY]
     }
 
-    abstract suspend fun exchangeItems(items: MutableList<Item>)
+    abstract fun exchangeItems(items: MutableList<Item>)
 }

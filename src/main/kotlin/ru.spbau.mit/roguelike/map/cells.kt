@@ -9,14 +9,14 @@ sealed class TerrainCell {
 }
 
 sealed class PassableCell(
-        lyingItems: Set<Item>
+        lyingItems: List<Item>
 ): TerrainCell() {
-    val lyingItems = lyingItems.toMutableSet()
+    val lyingItems = lyingItems.toMutableList()
 }
 
 sealed class ImpassableCell: TerrainCell()
 
-object WorldEntrance: PassableCell(emptySet()) {
+object WorldEntrance: PassableCell(emptyList()) {
     override fun interact() = NoInteraction
 
     override val char: Char = 60.toChar()
@@ -34,13 +34,13 @@ object WallCell: ImpassableCell() {
     override val char: Char = 176.toChar()
 }
 
-class FloorCell(lyingItems: Set<Item>): PassableCell(lyingItems) {
+class FloorCell(lyingItems: List<Item>): PassableCell(lyingItems) {
     override fun interact() = NoInteraction
 
     override val char: Char = 226.toChar()
 }
 
-object OpenedDoor: PassableCell(emptySet()) {
+object OpenedDoor: PassableCell(emptyList()) {
     override fun interact() = ChangesState(ClosedDoor)
 
     override val char: Char = 'O'

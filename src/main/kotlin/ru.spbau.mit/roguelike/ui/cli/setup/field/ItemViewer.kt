@@ -6,40 +6,33 @@ import org.codetome.zircon.api.component.Panel
 import org.codetome.zircon.api.component.TextBox
 import org.codetome.zircon.api.component.builder.TextBoxBuilder
 import org.codetome.zircon.api.graphics.Layer
-import org.codetome.zircon.api.input.MouseAction
 import org.codetome.zircon.api.screen.Screen
+import ru.spbau.mit.roguelike.items.Item
 import ru.spbau.mit.roguelike.runner.GameRunner
 import ru.spbau.mit.roguelike.ui.cli.setup.MouseEventHandler
+import ru.spbau.mit.roguelike.ui.cli.setup.ifActiveOnInput
 import ru.spbau.mit.roguelike.ui.cli.setup.itemInfoLayer
-import java.util.function.Consumer
 import kotlin.math.max
 import kotlin.math.min
 
-internal class HeroInventory(
+internal class ItemViewer(
         position: Position,
         size: Size,
         gameScreen: Screen,
+        title: String,
         gameRunner: GameRunner,
+        private val items: List<Item>,
+        private val itemClickedCallback: (Int) -> Unit,
         refreshCallback: () -> Unit
 ): GameScreenComponent(position, size, gameScreen, gameRunner, refreshCallback) {
     override val panel: Panel = panelBuilder
-            .title("Inventory")
+            .title(title)
             .build()
 
     private val lines: Int = panel.getEffectiveSize().rows
     private var scroll: Int = 0
     private val maxScroll: Int
-        get() = max(0, gameRunner.hero.backpack.size - lines)
-
-    private val scrollHandler = Consumer<MouseAction> {
-        scroll = when (it.button) {
-            4    -> max(0, scroll - 1)
-            5    -> min(maxScroll, scroll + 1)
-            else -> return@Consumer
-        }
-        refresh()
-        gameScreen.display()
-    }
+        get() = max(0, items.size - lines)
 
     private val itemTextBoxes: Array<TextBox> = Array(lines) {row ->
         val textBox = TextBoxBuilder.newBuilder()
@@ -52,13 +45,13 @@ internal class HeroInventory(
         textBox.onMouseReleased(MouseEventHandler {
             if (it.button == 1) {
                 val index = scroll + row
-                if (index < gameRunner.hero.backpack.size) {
-                    gameRunner.hero.equipItem(index)
+                if (index < items.size) {
+                    itemClickedCallback(index)
                     scroll = min(scroll, maxScroll)
                     refreshCallback()
                 }
             }
-        }.andThen(scrollHandler))
+        })
 
         return@Array textBox
     }
@@ -67,9 +60,21 @@ internal class HeroInventory(
 
     init {
         gameScreen.addComponent(panel)
-        refresh()
 
-        panel.onMouseReleased(scrollHandler)
+        gameScreen.ifActiveOnInput {
+            val mouseAction by lazy { it.asMouseAction() }
+            if (it.isMouseAction() && panel.containsPosition(mouseAction.position)) {
+                scroll = when (mouseAction.button) {
+                    4    -> max(0, scroll - 1)
+                    5    -> min(maxScroll, scroll + 1)
+                    else -> return@ifActiveOnInput
+                }
+                refresh()
+                gameScreen.display()
+            }
+        }
+
+        refresh()
     }
 
     override fun refresh() {
@@ -80,7 +85,7 @@ internal class HeroInventory(
             gameScreen.removeLayer(layer)
         }
 
-        for ((row, item) in gameRunner.hero.backpack
+        for ((row, item) in items
                 .drop(scroll)
                 .take(lines)
                 .withIndex()) {

@@ -6,13 +6,14 @@ import org.codetome.zircon.api.graphics.Layer
 import org.codetome.zircon.api.input.InputType
 import org.codetome.zircon.api.input.MouseActionType
 import org.codetome.zircon.api.screen.Screen
+import ru.spbau.mit.roguelike.items.Item
 import ru.spbau.mit.roguelike.runner.GameRunner
 import ru.spbau.mit.roguelike.ui.cli.CLIGameUI
 import ru.spbau.mit.roguelike.ui.cli.setup.field.GameScreenComponent
-import ru.spbau.mit.roguelike.ui.cli.setup.field.HeroEquipment
 import ru.spbau.mit.roguelike.ui.cli.setup.field.ItemViewer
 
-internal fun CLIGameUI.setupHeroInventoryScreen(
+internal fun CLIGameUI.setupItemExchangeDialog(
+        items: MutableList<Item>,
         returnToScreen: Screen,
         gameRunner: GameRunner
 ): Screen {
@@ -31,24 +32,27 @@ internal fun CLIGameUI.setupHeroInventoryScreen(
 
     val screenSize = screen.getBoundableSize()
 
-    val heroEquipment = HeroEquipment(
+    val availableItems = ItemViewer(
             Position.of(0, 0),
             screenSize.withColumns(screenSize.columns / 2),
             screen,
+            "Found",
             gameRunner,
+            items,
+            { index -> gameRunner.hero.takeItem(items.removeAt(index)) },
             refresh
     )
 
-    components += heroEquipment
+    components += availableItems
 
     val heroInventory = ItemViewer(
-            Position.of(0, 0).relativeToRightOf(heroEquipment.panel),
+            Position.of(0, 0).relativeToRightOf(availableItems.panel),
             screenSize.withRelativeColumns(-screenSize.columns / 2),
             screen,
             "Backpack",
             gameRunner,
             gameRunner.hero.backpack,
-            { index -> gameRunner.hero.equipItem(index) },
+            { index -> items.add(gameRunner.hero.dropItem(index)) },
             refresh
     )
 

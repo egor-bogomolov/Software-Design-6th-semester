@@ -7,6 +7,7 @@ import org.codetome.zircon.api.input.InputType
 import org.codetome.zircon.api.screen.Screen
 import ru.spbau.mit.roguelike.creatures.*
 import ru.spbau.mit.roguelike.creatures.hero.Hero
+import ru.spbau.mit.roguelike.map.PassableCell
 import ru.spbau.mit.roguelike.map.plus
 import ru.spbau.mit.roguelike.runner.GameRunner
 import ru.spbau.mit.roguelike.ui.cli.CLIGameUI
@@ -99,7 +100,12 @@ fun CLIGameUI.setupGameFieldScreen(gameRunner: GameRunner): Screen {
                     screen.pushLayer(helpLayer)
                     screen.display()
                 }
-                'T' -> TODO("item exchange dialog")
+                'T' -> {
+                    val heroCell = gameRunner.gameMap[gameRunner.creatureManager.heroPosition]
+                    gameRunner.hero.exchangeItems(
+                            (heroCell as PassableCell).lyingItems
+                    )
+                }
                 'I' -> heroInventoryScreen.activate()
                 'i' -> actionMode = ActionMode.INTERACT
                 'a' -> actionMode = ActionMode.ATTACK

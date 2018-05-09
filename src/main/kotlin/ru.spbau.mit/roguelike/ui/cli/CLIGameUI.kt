@@ -4,6 +4,7 @@ import org.codetome.zircon.api.Size
 import org.codetome.zircon.api.builder.TerminalBuilder
 import org.codetome.zircon.api.resource.CP437TilesetResource
 import org.codetome.zircon.api.resource.ColorThemeResource
+import org.codetome.zircon.api.screen.Screen
 import ru.spbau.mit.roguelike.creatures.Creature
 import ru.spbau.mit.roguelike.creatures.CreatureAction
 import ru.spbau.mit.roguelike.creatures.hero.BasicStats
@@ -18,7 +19,6 @@ import ru.spbau.mit.roguelike.runner.GameSettings
 import ru.spbau.mit.roguelike.runner.NGoblinsGenerator
 import ru.spbau.mit.roguelike.ui.GameUI
 import ru.spbau.mit.roguelike.ui.cli.setup.*
-import ru.spbau.mit.roguelike.ui.cli.setup.setupResultsScreen
 import kotlin.coroutines.experimental.Continuation
 import kotlin.coroutines.experimental.suspendCoroutine
 
@@ -37,6 +37,8 @@ object CLIGameUI: GameUI(EmptyMapGenerator, NGoblinsGenerator(5)) {
             .initialTerminalSize(terminalSize)
             .build()
 
+    private lateinit var gameField: Screen
+
     internal class CLIHero(name: String) : Hero(name) {
         init {
             for (i in 1..50) {
@@ -54,10 +56,11 @@ object CLIGameUI: GameUI(EmptyMapGenerator, NGoblinsGenerator(5)) {
         override suspend fun askAction(position: Position, visibleMap: GameMap, visibleCreatures: Map<Position, Set<Creature>>) =
                 suspendCoroutine<CreatureAction> { continuation = it }
 
-        override suspend fun exchangeItems(items: MutableList<Item>) {
+        override fun exchangeItems(items: MutableList<Item>) {
             val exchangeDialog = setupItemExchangeDialog(
-                    this,
-                    items
+                    items,
+                    gameField,
+                    gameRunner
             )
             exchangeDialog.applyColorTheme(terminalColorTheme)
             exchangeDialog.activate()
@@ -79,7 +82,7 @@ object CLIGameUI: GameUI(EmptyMapGenerator, NGoblinsGenerator(5)) {
     override fun runGame(
             gameRunner: GameRunner
     ) {
-        val gameField = setupGameFieldScreen(gameRunner)
+        gameField = setupGameFieldScreen(gameRunner)
         gameField.applyColorTheme(terminalColorTheme)
         gameField.activate()
         while (!gameRunner.gameFinished) {

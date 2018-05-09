@@ -9,7 +9,7 @@ interface GameMapGenerator {
 object EmptyMapGenerator: GameMapGenerator {
     override fun generateMap(settings: GameSettings): GameMap {
         val cells = Array(settings.mapDimensions.second) { row ->
-            Array(settings.mapDimensions.first) { column -> Pair(Pair(column + 1, row + 1), FloorCell(emptySet())) }
+            Array(settings.mapDimensions.first) { column -> Pair(Pair(column + 1, row + 1), FloorCell(emptyList())) }
         }
                 .fold(emptyList<Pair<Position,TerrainCell>>()) { l, r -> l + r }
                 .toMap()

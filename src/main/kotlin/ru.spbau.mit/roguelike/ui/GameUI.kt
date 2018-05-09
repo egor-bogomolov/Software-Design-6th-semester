@@ -13,7 +13,10 @@ abstract class GameUI(
         private val mapGenerator: GameMapGenerator,
         private val creatureGenerator: CreatureGenerator
 ) {
-    internal abstract fun setupGame(
+    protected lateinit var gameSettings: GameSettings
+    protected lateinit var gameRunner: GameRunner
+
+    protected abstract fun setupGame(
             settingsForwarder: Continuation<GameSettings>
     )
 
@@ -35,13 +38,13 @@ abstract class GameUI(
 
         while (newGame) {
             runBlocking {
-                val gameSettings = suspendCoroutine<GameSettings> {
+                gameSettings = suspendCoroutine<GameSettings> {
                     setupGame(it)
                 }
                 val hero = suspendCoroutine<Hero> {
                     setupHero(it)
                 }
-                val gameRunner = GameRunner(
+                gameRunner = GameRunner(
                         gameSettings,
                         hero,
                         mapGenerator,
