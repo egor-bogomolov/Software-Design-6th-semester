@@ -59,11 +59,11 @@ class CreatureManager(
         internalCreatures.getOrPut(newPosition, { mutableSetOf() }).add(creature)
         if (creature is Hero) {
             heroPosition += direction
+            val cell = gameMap[heroPosition]
+            if (cell is PassableCell && cell.lyingItems.isNotEmpty()) {
+                Logger.log("there are some items on the ground")
+            }
         }
-
-        Logger.log(
-                position, "${creature.name} moved from $position to $newPosition"
-        )
     }
 
     fun processAttack(
@@ -92,7 +92,7 @@ class CreatureManager(
 
         Logger.log(position, "$logPrefix: $logBody")
 
-        return if (attacked.health < 0) {
+        return if (attacked.health <= 0) {
             Logger.log(attackedPosition, "${attacked.name} died")
             internalCreatures[attackedPosition]!!.remove(attacked)
             if (attacked is Hero) {

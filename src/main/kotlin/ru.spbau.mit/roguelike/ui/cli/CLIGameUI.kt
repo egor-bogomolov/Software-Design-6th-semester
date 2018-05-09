@@ -18,20 +18,22 @@ import ru.spbau.mit.roguelike.runner.GameSettings
 import ru.spbau.mit.roguelike.runner.NGoblinsGenerator
 import ru.spbau.mit.roguelike.ui.GameUI
 import ru.spbau.mit.roguelike.ui.cli.setup.*
+import ru.spbau.mit.roguelike.ui.cli.setup.field.setupResultsScreen
 import kotlin.coroutines.experimental.Continuation
 import kotlin.coroutines.experimental.suspendCoroutine
 
+internal val terminalColorTheme =
+        ColorThemeResource.SOLARIZED_DARK_ORANGE.getTheme()
+
 object CLIGameUI: GameUI(EmptyMapGenerator, NGoblinsGenerator(5)) {
     private val terminalSize = Size.of(80, 40)
-    private val font = CP437TilesetResource.WANDERLUST_16X16.toFont()
-    private val colorTheme = ColorThemeResource.SOLARIZED_DARK_ORANGE.getTheme()
 
     internal var continuation: Continuation<CreatureAction>? = null
 
     internal val terminal = TerminalBuilder
             .newBuilder()
             .title("Roguelike")
-            .font(font)
+            .font(CP437TilesetResource.WANDERLUST_16X16.toFont())
             .initialTerminalSize(terminalSize)
             .build()
 
@@ -52,21 +54,25 @@ object CLIGameUI: GameUI(EmptyMapGenerator, NGoblinsGenerator(5)) {
         override suspend fun askAction(position: Position, visibleMap: GameMap, visibleCreatures: Map<Position, Set<Creature>>) =
                 suspendCoroutine<CreatureAction> { continuation = it }
 
-        override suspend fun exchangeItems(items: MutableList<Item>) =
-                suspendCoroutine<Unit> {
-                    showItemExchangeDialog(items, it)
-                }
+        override suspend fun exchangeItems(items: MutableList<Item>) {
+            val exchangeDialog = setupItemExchangeDialog(
+                    this,
+                    items
+            )
+            exchangeDialog.applyColorTheme(terminalColorTheme)
+            exchangeDialog.activate()
+        }
     }
 
     override fun setupGame(settingsForwarder: Continuation<GameSettings>) {
         val gameSetupScreen = setupGameScreen(settingsForwarder)
-        gameSetupScreen.applyColorTheme(colorTheme)
+        gameSetupScreen.applyColorTheme(terminalColorTheme)
         gameSetupScreen.activate()
     }
 
     override fun setupHero(heroForwarder: Continuation<Hero>) {
         val heroSetupScreen = setupHeroScreen(heroForwarder)
-        heroSetupScreen.applyColorTheme(colorTheme)
+        heroSetupScreen.applyColorTheme(terminalColorTheme)
         heroSetupScreen.activate()
     }
 
@@ -74,7 +80,7 @@ object CLIGameUI: GameUI(EmptyMapGenerator, NGoblinsGenerator(5)) {
             gameRunner: GameRunner
     ) {
         val gameField = setupGameFieldScreen(gameRunner)
-        gameField.applyColorTheme(colorTheme)
+        gameField.applyColorTheme(terminalColorTheme)
         gameField.activate()
         while (!gameRunner.gameFinished) {
             gameRunner.nextTurn()
@@ -85,6 +91,8 @@ object CLIGameUI: GameUI(EmptyMapGenerator, NGoblinsGenerator(5)) {
             gameRunner: GameRunner,
             newGameForwarder: Continuation<Boolean>
     ) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val resultsScreen = setupResultsScreen(gameRunner, newGameForwarder)
+        resultsScreen.applyColorTheme(terminalColorTheme)
+        resultsScreen.activate()
     }
 }

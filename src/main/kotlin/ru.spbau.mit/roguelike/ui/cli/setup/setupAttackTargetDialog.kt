@@ -1,15 +1,54 @@
 package ru.spbau.mit.roguelike.ui.cli.setup
 
+import org.codetome.zircon.api.Size
+import org.codetome.zircon.api.builder.TerminalBuilder
+import org.codetome.zircon.api.component.builder.RadioButtonGroupBuilder
 import org.codetome.zircon.api.screen.Screen
-import ru.spbau.mit.roguelike.creatures.Creature
-import ru.spbau.mit.roguelike.runner.GameRunner
-import kotlin.coroutines.experimental.Continuation
+import ru.spbau.mit.roguelike.creatures.*
+import ru.spbau.mit.roguelike.formatEnumValue
+import ru.spbau.mit.roguelike.ui.cli.CLIGameUI
+import java.util.function.Consumer
 
-fun setupAttackTargetDialog(
-        screen: Screen,
-        gameRunner: GameRunner,
-        attackedCell: Pair<Int, Int>,
-        chosenTargetForwarder: Continuation<Creature>
+internal fun CLIGameUI.setupAttackTargetDialog(
+        direction: Direction,
+        possibleTargets: Set<Creature>,
+        actionForwarder: (CreatureAction) -> Unit,
+        returnToScreen: Screen
 ): Screen {
-    TODO("not implemented")
+    val screen = TerminalBuilder.createScreenFor(terminal)
+
+    val panel = panelTemplate
+            .title("Choose target")
+            .size(screen
+                    .getBoundableSize()
+                    .minus(Size.of(2, 2))
+            )
+            .build()
+
+    screen.addComponent(panel)
+
+    val targets = RadioButtonGroupBuilder
+            .newBuilder()
+            .size(panel.getEffectiveSize())
+            .build()
+
+    panel.addComponent(targets)
+
+    val orderedCreatures = possibleTargets.toList()
+
+    for ((index, creature) in orderedCreatures.withIndex()) {
+        if (creature is Monster) {
+            val text = "${formatEnumValue(creature.modifier.name)} ${creature.name} [${creature.health}/${creature.maxHealth}]"
+
+            targets.addOption(index.toString(), text)
+        }
+    }
+
+    targets.onSelection(Consumer {
+        val attackedCreature = orderedCreatures[it.getKey().toInt()]
+        actionForwarder(Attack(direction, attackedCreature))
+        returnToScreen.activate()
+    })
+
+    return screen
 }

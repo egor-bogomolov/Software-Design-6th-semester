@@ -1,12 +1,12 @@
 package ru.spbau.mit.roguelike.ui.cli.setup
 
-import kotlinx.coroutines.experimental.runBlocking
 import org.codetome.zircon.api.Position
 import org.codetome.zircon.api.Size
 import org.codetome.zircon.api.builder.TerminalBuilder
 import org.codetome.zircon.api.input.InputType
 import org.codetome.zircon.api.screen.Screen
 import ru.spbau.mit.roguelike.creatures.*
+import ru.spbau.mit.roguelike.creatures.hero.Hero
 import ru.spbau.mit.roguelike.map.plus
 import ru.spbau.mit.roguelike.runner.GameRunner
 import ru.spbau.mit.roguelike.ui.cli.CLIGameUI
@@ -14,7 +14,8 @@ import ru.spbau.mit.roguelike.ui.cli.setup.field.GameField
 import ru.spbau.mit.roguelike.ui.cli.setup.field.GameLog
 import ru.spbau.mit.roguelike.ui.cli.setup.field.GameScreenComponent
 import ru.spbau.mit.roguelike.ui.cli.setup.field.HeroInfo
-import kotlin.coroutines.experimental.suspendCoroutine
+import ru.spbau.mit.roguelike.ui.cli.terminalColorTheme
+import kotlin.coroutines.experimental.Continuation
 
 fun CLIGameUI.setupGameFieldScreen(gameRunner: GameRunner): Screen {
     val screen = TerminalBuilder.createScreenFor(terminal)
@@ -80,8 +81,9 @@ fun CLIGameUI.setupGameFieldScreen(gameRunner: GameRunner): Screen {
             screen,
             gameRunner
     )
+    heroInventoryScreen.applyColorTheme(terminalColorTheme)
 
-    var actionMode: (Direction) -> DirectedAction = ::Move
+    var actionMode = ActionMode.MOVE
 
     val helpLayer = setupHelpLayer(
             gameField.panel.getPosition().withRelative(Position.OFFSET_1x1),
@@ -97,25 +99,14 @@ fun CLIGameUI.setupGameFieldScreen(gameRunner: GameRunner): Screen {
                     screen.pushLayer(helpLayer)
                     screen.display()
                 }
+                'T' -> TODO("item exchange dialog")
                 'I' -> heroInventoryScreen.activate()
-                'i' -> actionMode = ::Interact
-                'a' -> actionMode = { direction ->
-                    runBlocking {
-                        val attacked = suspendCoroutine<Creature> {
-                            setupAttackTargetDialog(
-                                    screen,
-                                    gameRunner,
-                                    gameRunner.creatureManager.heroPosition + direction,
-                                    it
-                            ).activate()
-                        }
-                        Attack(direction, attacked)
-                    }
-                }
-                'm' -> actionMode = ::Move
+                'i' -> actionMode = ActionMode.INTERACT
+                'a' -> actionMode = ActionMode.ATTACK
+                'm' -> actionMode = ActionMode.MOVE
             }
         } else if (continuation != null) {
-            val action = actionMode(
+            val direction =
                     when (input.getInputType()) {
                         InputType.ArrowUp    -> Direction.NORTH
                         InputType.ArrowDown  -> Direction.SOUTH
@@ -134,14 +125,63 @@ fun CLIGameUI.setupGameFieldScreen(gameRunner: GameRunner): Screen {
                             }
                         else                 -> return@ifActiveOnInput
                     }
-            )
             val copy = continuation
-            actionMode = ::Move
             continuation = null
-            copy?.resume(action)
-            refresh()
+            processAction(
+                    screen,
+                    gameRunner,
+                    direction,
+                    actionMode,
+                    copy!!,
+                    refresh
+            )
+            actionMode = ActionMode.MOVE
         }
     }
 
     return screen
+}
+
+private fun CLIGameUI.processAction(
+        screen: Screen,
+        gameRunner: GameRunner,
+        direction: Direction,
+        actionMode: ActionMode,
+        continuation: Continuation<CreatureAction>,
+        refresh: () -> Unit
+) {
+    val resume = { creatureAction: CreatureAction ->
+        continuation.resume(creatureAction)
+        refresh()
+    }
+
+    when (actionMode) {
+        ActionMode.MOVE     -> resume(Move(direction))
+        ActionMode.INTERACT -> resume(Interact(direction))
+        ActionMode.ATTACK   -> {
+            val attackedPosition = gameRunner.creatureManager.heroPosition + direction
+            val possibleTargets = gameRunner.creatureManager[attackedPosition]
+            when {
+                possibleTargets.isEmpty()        -> resume(PassTurn)
+                possibleTargets.size > 1         -> {
+                    val attackDialog = setupAttackTargetDialog(
+                            direction,
+                            possibleTargets,
+                            resume,
+                            screen
+                    )
+                    attackDialog.applyColorTheme(terminalColorTheme)
+                    attackDialog.activate()
+                }
+                possibleTargets.single() is Hero -> resume(PassTurn)
+                else                             -> resume(Attack(direction, possibleTargets.single()))
+            }
+        }
+    }
+}
+
+private enum class ActionMode {
+    MOVE,
+    ATTACK,
+    INTERACT
 }
