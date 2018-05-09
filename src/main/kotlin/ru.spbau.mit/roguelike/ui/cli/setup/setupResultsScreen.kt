@@ -43,8 +43,13 @@ internal fun CLIGameUI.setupResultsScreen(
 
     screen.addComponent(retryButton)
 
+    var resumed = false
+
     retryButton.onMouseReleased(Consumer {
-        newGameForwarder.resume(true)
+        if (!resumed) {
+            newGameForwarder.resume(true)
+            resumed = true
+        }
     })
 
     val exitText = "Exit"
@@ -59,12 +64,11 @@ internal fun CLIGameUI.setupResultsScreen(
 
     screen.addComponent(exitButton)
 
-    var resumed = false
-
     exitButton.onMouseReleased(Consumer {
         if (!resumed) {
             newGameForwarder.resume(false)
             resumed = true
+            terminal.close()
         }
     })
 
