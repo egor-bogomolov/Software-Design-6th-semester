@@ -18,7 +18,7 @@ import ru.spbau.mit.roguelike.runner.GameSettings
 import ru.spbau.mit.roguelike.runner.NGoblinsGenerator
 import ru.spbau.mit.roguelike.ui.GameUI
 import ru.spbau.mit.roguelike.ui.cli.setup.*
-import ru.spbau.mit.roguelike.ui.cli.setup.field.setupResultsScreen
+import ru.spbau.mit.roguelike.ui.cli.setup.setupResultsScreen
 import kotlin.coroutines.experimental.Continuation
 import kotlin.coroutines.experimental.suspendCoroutine
 
