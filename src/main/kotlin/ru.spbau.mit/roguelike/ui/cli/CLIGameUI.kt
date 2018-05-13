@@ -11,9 +11,9 @@ import ru.spbau.mit.roguelike.creatures.hero.Hero
 import ru.spbau.mit.roguelike.items.Item
 import ru.spbau.mit.roguelike.map.GameMap
 import ru.spbau.mit.roguelike.map.Position
-import ru.spbau.mit.roguelike.runner.EmptyMapGenerator
 import ru.spbau.mit.roguelike.runner.GameRunner
 import ru.spbau.mit.roguelike.runner.GameSettings
+import ru.spbau.mit.roguelike.runner.MazeGenerator
 import ru.spbau.mit.roguelike.runner.NGoblinsGenerator
 import ru.spbau.mit.roguelike.ui.GameUI
 import ru.spbau.mit.roguelike.ui.cli.setup.*
@@ -26,7 +26,7 @@ internal val terminalColorTheme =
 /**
  * CLI GameUI implementation
  */
-object CLIGameUI: GameUI(EmptyMapGenerator, NGoblinsGenerator(5)) {
+object CLIGameUI: GameUI(MazeGenerator, NGoblinsGenerator(5)) {
     private val terminalSize = Size.of(80, 40)
 
     internal var continuation: Continuation<CreatureAction>? = null

@@ -180,7 +180,7 @@ private fun CLIGameUI.processAction(
         ActionMode.INTERACT -> resume(Interact(direction))
         ActionMode.ATTACK   -> {
             val attackedPosition = gameRunner.creatureManager.heroPosition + direction
-            val possibleTargets = gameRunner.creatureManager[attackedPosition]
+            val possibleTargets = gameRunner.creatureManager[attackedPosition].minus(gameRunner.hero)
             when {
                 possibleTargets.isEmpty()        -> resume(PassTurn)
                 possibleTargets.size > 1         -> {

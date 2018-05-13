@@ -153,7 +153,7 @@ internal fun setupNumberPanel(
 
     val valueBox = TextBoxBuilder
             .newBuilder()
-            .text(((minValue + maxValue) / 2).toString())
+            .text(minValue.toString())
             .position(Position
                     .of(1,0)
                     .relativeToRightOf(lessButton)

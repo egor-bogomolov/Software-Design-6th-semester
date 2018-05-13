@@ -84,8 +84,9 @@ internal class ItemViewer(
         for (textBox in itemTextBoxes) {
             textBox.setText("")
         }
-        for (layer in itemInfoLayers) {
+        for ((index, layer) in itemInfoLayers.withIndex()) {
             gameScreen.removeLayer(layer)
+            itemInfoLayers[index] = EMPTY_LAYER
         }
 
         for ((row, item) in items

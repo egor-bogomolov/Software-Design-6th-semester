@@ -1,5 +1,6 @@
 package ru.spbau.mit.roguelike.items
 
+import ru.spbau.mit.roguelike.RandomEnumGetter
 import ru.spbau.mit.roguelike.creatures.hero.BasicStats
 import ru.spbau.mit.roguelike.formatEnumValue
 
@@ -21,7 +22,11 @@ class Equipment(
         GLOVES,
         SWORD,
         PANTS,
-        BOOTS
+        BOOTS;
+
+        companion object: RandomEnumGetter<Slot>(
+                Slot::class.java
+        )
     }
 
     override fun detailedInfo(): String {

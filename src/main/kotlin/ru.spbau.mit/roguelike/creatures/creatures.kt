@@ -128,7 +128,7 @@ class Monster(
             return Move(Direction.RANDOM)
         }
 
-        for (direction in Direction.values()) {
+        for (direction in Direction.values().asIterable().shuffled()) {
             val pointedCell = position + direction
             if (heroPosition == pointedCell) {
                 return Attack(direction, hero)

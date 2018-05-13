@@ -107,7 +107,7 @@ class Chest(contents: List<Item>): ImpassableCell() {
     override fun interact() =
             CanExchangeItems(contents)
 
-    override val char: Char = 199.toChar()
+    override val char: Char = 91.toChar()
 }
 
 /**

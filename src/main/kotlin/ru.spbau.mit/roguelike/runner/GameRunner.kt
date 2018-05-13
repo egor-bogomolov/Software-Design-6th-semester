@@ -118,7 +118,7 @@ class GameRunner(
                     }
                 }
             }
-            gameFinished = gameFinished && creatureManager.heroAlive
+            gameFinished = gameFinished || !creatureManager.heroAlive
             turnLog = Logger.getNewVisible(heroVisibleMap()).map { it.toString() }
         }
     }

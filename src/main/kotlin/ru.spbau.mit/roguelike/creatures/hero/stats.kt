@@ -1,5 +1,7 @@
 package ru.spbau.mit.roguelike.creatures.hero
 
+import ru.spbau.mit.roguelike.RandomEnumGetter
+
 /**
  * Represents basic hero stats
  */
@@ -17,7 +19,11 @@ class BasicStats(
     enum class Type {
         STRENGTH,
         AGILITY,
-        DAMAGE
+        DAMAGE;
+
+        companion object: RandomEnumGetter<Type>(
+                Type::class.java
+        )
     }
 
     /**
