@@ -7,9 +7,7 @@ import org.codetome.zircon.api.resource.ColorThemeResource
 import org.codetome.zircon.api.screen.Screen
 import ru.spbau.mit.roguelike.creatures.Creature
 import ru.spbau.mit.roguelike.creatures.CreatureAction
-import ru.spbau.mit.roguelike.creatures.hero.BasicStats
 import ru.spbau.mit.roguelike.creatures.hero.Hero
-import ru.spbau.mit.roguelike.items.Equipment
 import ru.spbau.mit.roguelike.items.Item
 import ru.spbau.mit.roguelike.map.GameMap
 import ru.spbau.mit.roguelike.map.Position
@@ -25,6 +23,9 @@ import kotlin.coroutines.experimental.suspendCoroutine
 internal val terminalColorTheme =
         ColorThemeResource.SOLARIZED_DARK_ORANGE.getTheme()
 
+/**
+ * CLI GameUI implementation
+ */
 object CLIGameUI: GameUI(EmptyMapGenerator, NGoblinsGenerator(5)) {
     private val terminalSize = Size.of(80, 40)
 
@@ -40,21 +41,11 @@ object CLIGameUI: GameUI(EmptyMapGenerator, NGoblinsGenerator(5)) {
     private lateinit var gameField: Screen
 
     internal class CLIHero(name: String) : Hero(name) {
-        init {
-            for (i in 1..50) {
-                takeItem(
-                        Equipment(
-                                "Viking helmet $i",
-                                "No one knows what it is doing here",
-                                Equipment.Slot.HELMET,
-                                BasicStats()
-                        )
-                )
-            }
-        }
-
-        override suspend fun askAction(position: Position, visibleMap: GameMap, visibleCreatures: Map<Position, Set<Creature>>) =
-                suspendCoroutine<CreatureAction> { continuation = it }
+        override suspend fun askAction(
+                position: Position,
+                visibleMap: GameMap,
+                visibleCreatures: Map<Position, Set<Creature>>
+        ) = suspendCoroutine<CreatureAction> { continuation = it }
 
         override fun exchangeItems(items: MutableList<Item>) {
             val exchangeDialog = setupItemExchangeDialog(

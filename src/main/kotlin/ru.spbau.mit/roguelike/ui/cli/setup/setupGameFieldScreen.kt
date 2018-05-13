@@ -18,6 +18,11 @@ import ru.spbau.mit.roguelike.ui.cli.setup.field.HeroInfo
 import ru.spbau.mit.roguelike.ui.cli.terminalColorTheme
 import kotlin.coroutines.experimental.Continuation
 
+/**
+ * Sets up game field to run game onto
+ * @param gameRunner to get information from
+ * @return constructed screen
+ */
 fun CLIGameUI.setupGameFieldScreen(gameRunner: GameRunner): Screen {
     val screen = TerminalBuilder.createScreenFor(terminal)
     screen.setCursorVisibility(false) // we don't want the cursor right now
@@ -148,6 +153,15 @@ fun CLIGameUI.setupGameFieldScreen(gameRunner: GameRunner): Screen {
     return screen
 }
 
+/**
+ * CLIGameUI hero action processor function
+ * @param screen to process action on
+ * @param gameRunner to get game info from
+ * @param direction of the action
+ * @param actionMode of the action
+ * @param continuation to send constructed action to
+ * @param screen contents refreshing function
+ */
 private fun CLIGameUI.processAction(
         screen: Screen,
         gameRunner: GameRunner,
@@ -186,6 +200,9 @@ private fun CLIGameUI.processAction(
     }
 }
 
+/**
+ * Represents current action mode
+ */
 private enum class ActionMode {
     MOVE,
     ATTACK,

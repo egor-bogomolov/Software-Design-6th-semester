@@ -7,13 +7,24 @@ import ru.spbau.mit.roguelike.map.PassableCell
 import ru.spbau.mit.roguelike.map.Position
 import java.util.*
 
+/**
+ * Interface for creature generation
+ */
 interface CreatureGenerator {
+    /** Generates creature given a map and game settings
+     * @param settings to get difficulty from
+     * @param gameMap to generate creatures onto
+     * @return generated creatures
+     */
     fun generateCreatures(
             settings: GameSettings,
             gameMap: GameMap
     ): Map<Position,Set<Creature>>
 }
 
+/**
+ * Generates no creatures
+ */
 object NoCreatureGenerator: CreatureGenerator {
     override fun generateCreatures(
             settings: GameSettings,
@@ -22,6 +33,9 @@ object NoCreatureGenerator: CreatureGenerator {
             emptyMap()
 }
 
+/**
+ * Generates n goblins with 10 base health and 1 base damage
+ */
 class NGoblinsGenerator(val n: Int): CreatureGenerator {
     private val random = Random()
 

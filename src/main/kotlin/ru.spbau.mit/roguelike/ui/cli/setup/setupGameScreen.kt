@@ -13,6 +13,9 @@ import java.util.function.Consumer
 import kotlin.coroutines.experimental.Continuation
 import kotlin.math.max
 
+/**
+ * @see ru.spbau.mit.roguelike.ui.GameUI.setupGame
+ */
 internal fun CLIGameUI.setupGameScreen(
         settingsForwarder: Continuation<GameSettings>
 ): Screen {

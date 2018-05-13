@@ -12,6 +12,12 @@ import ru.spbau.mit.roguelike.ui.cli.setup.field.GameScreenComponent
 import ru.spbau.mit.roguelike.ui.cli.setup.field.HeroEquipment
 import ru.spbau.mit.roguelike.ui.cli.setup.field.ItemViewer
 
+/**
+ * Sets up hero inventory and equipment screen
+ * @param returnToScreen screen to return back to on "Esc"
+ * @param gameRunner to get hero info from
+ * @return constructed screen
+ */
 internal fun CLIGameUI.setupHeroInventoryScreen(
         returnToScreen: Screen,
         gameRunner: GameRunner

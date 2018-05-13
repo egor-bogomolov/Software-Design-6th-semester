@@ -10,6 +10,9 @@ import org.codetome.zircon.api.screen.Screen
 import org.codetome.zircon.internal.graphics.BoxType
 import ru.spbau.mit.roguelike.runner.GameRunner
 
+/**
+ * Represents abstract game screen component
+ */
 internal abstract class GameScreenComponent(
         position: Position,
         size: Size,
@@ -23,10 +26,19 @@ internal abstract class GameScreenComponent(
             .wrapWithBox()
             .boxType(BoxType.TOP_BOTTOM_DOUBLE)
 
+    /**
+     * Zircon panel to contain information in
+     */
     abstract val panel: Panel
 
+    /**
+     * Refreshes contents
+     */
     abstract fun refresh()
 
+    /**
+     * Information to show if mouse moves
+     */
     open fun onMouseMoved(position: Position): Layer? = null
 
     companion object {

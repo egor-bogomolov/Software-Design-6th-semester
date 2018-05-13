@@ -12,6 +12,9 @@ import ru.spbau.mit.roguelike.ui.cli.CLIGameUI
 import java.util.function.Consumer
 import kotlin.coroutines.experimental.Continuation
 
+/**
+ * @see ru.spbau.mit.roguelike.ui.GameUI.setupHero
+ */
 internal fun CLIGameUI.setupHeroScreen(
         heroForwarder: Continuation<Hero>
 ): Screen {

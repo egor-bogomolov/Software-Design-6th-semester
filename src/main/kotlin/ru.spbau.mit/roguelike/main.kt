@@ -3,11 +3,17 @@ package ru.spbau.mit.roguelike
 import ru.spbau.mit.roguelike.ui.GameUI
 import ru.spbau.mit.roguelike.ui.cli.CLIGameUI
 
-val gameModes = mapOf<String,Pair<String,GameUI>>(
+/**
+ * All available game modes in form `argument-to-main` -> (`usage-entry`, `game-mode`)
+ */
+private val gameModes = mapOf<String,Pair<String,GameUI>>(
         "cli" to ("CLI" to CLIGameUI)
 )
 
-val usageMessage: String by lazy {
+/**
+ * Usage message for main function
+ */
+private val usageMessage: String by lazy {
     StringBuilder()
             .appendln("Usage:")
             .appendln(
@@ -18,13 +24,20 @@ val usageMessage: String by lazy {
             .toString()
 }
 
-fun printUsage(additionalMessage: String = "") {
+/**
+ * Outputs usage message with some additional information
+ * @param additionalMessage additional information to output before usage message
+ */
+private fun printUsage(additionalMessage: String = "") {
     println("""
         $additionalMessage
         $usageMessage
     """.trimIndent())
 }
 
+/**
+ * Application entry point
+ */
 fun main(args: Array<String>) {
     when {
         args.isEmpty() -> {

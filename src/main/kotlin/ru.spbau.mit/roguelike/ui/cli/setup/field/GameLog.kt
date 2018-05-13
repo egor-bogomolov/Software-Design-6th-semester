@@ -6,9 +6,11 @@ import org.codetome.zircon.api.component.Panel
 import org.codetome.zircon.api.component.TextBox
 import org.codetome.zircon.api.component.builder.TextBoxBuilder
 import org.codetome.zircon.api.screen.Screen
-import ru.spbau.mit.roguelike.Logger
 import ru.spbau.mit.roguelike.runner.GameRunner
 
+/**
+ * Represents game log which reads messages from @see ru.spbau.mit.roguelike.Logger class
+ */
 internal class GameLog(
         position: Position,
         size: Size,
@@ -30,11 +32,10 @@ internal class GameLog(
         textBox.disable()
     }
 
+    /**
+     * Refreshes log contents
+     */
     override fun refresh() {
-        textBox.setText(
-                Logger
-                        .getNewVisible(gameRunner.heroVisibleMap())
-                        .joinToString("\n")
-        )
+        textBox.setText(gameRunner.turnLog.joinToString("\n"))
     }
 }

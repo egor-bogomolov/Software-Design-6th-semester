@@ -2,17 +2,16 @@ package ru.spbau.mit.roguelike.map
 
 import ru.spbau.mit.roguelike.exceptions.GameMapHasNoEntranceException
 import ru.spbau.mit.roguelike.exceptions.GameMapMultipleEntrancesException
-import kotlin.math.abs
 
-typealias Position=Pair<Int,Int>
-
-fun Position.manhattanDistance(other: Position): Int =
-        abs(first - other.first) +
-                abs(second - other.second)
-
+/**
+ * Represents game map and processes interactions with its cells
+ */
 class GameMap(cells: Map<Position,TerrainCell>) {
     private val cells = cells.toMutableMap()
 
+    /**
+     * Map entrance
+     */
     val entrance: Position
 
     init {
@@ -24,11 +23,27 @@ class GameMap(cells: Map<Position,TerrainCell>) {
         }
     }
 
+    /**
+     * Convenience method for getting cell at a given position
+     * @param position to get cell at
+     * @return cell at specified position (if exists) or OutsideGameBordersCell otherwise
+     */
     operator fun get(position: Position): TerrainCell =
             cells[position] ?: OutsideGameBordersCell
 
+    /**
+     * Convenience method for getting cell at a position specified by x and y
+     * @param x coordinate
+     * @param y coordinate
+     * @return get(Position(x, y))
+     */
     operator fun get(x: Int, y: Int): TerrainCell = this[Pair(x, y)]
 
+    /**
+     * Processes interaction with a specific cell
+     * @param position cell to interact with
+     * @return interaction result
+     */
     fun interact(
             position: Position
     ): InteractionResult {

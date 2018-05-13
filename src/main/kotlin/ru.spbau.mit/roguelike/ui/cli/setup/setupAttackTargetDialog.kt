@@ -9,6 +9,15 @@ import ru.spbau.mit.roguelike.formatEnumValue
 import ru.spbau.mit.roguelike.ui.cli.CLIGameUI
 import java.util.function.Consumer
 
+/**
+ * Sets up a screen for hero to choose attack target in a specific map cell
+ * @param direction of attack
+ * @param possibleTargets to attack
+ * @param actionForwarder function which forwards chosen target to attack processor
+ * (@see ru.spbau.mit.roguelike.creatures.CreatureManager.processAttack)
+ * @param returnToScreen screen to return to
+ * @return constructed screen
+ */
 internal fun CLIGameUI.setupAttackTargetDialog(
         direction: Direction,
         possibleTargets: Set<Creature>,

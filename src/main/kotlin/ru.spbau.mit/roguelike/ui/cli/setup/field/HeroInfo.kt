@@ -9,6 +9,9 @@ import ru.spbau.mit.roguelike.creatures.hero.BasicStats
 import ru.spbau.mit.roguelike.creatures.hero.Hero
 import ru.spbau.mit.roguelike.runner.GameRunner
 
+/**
+ * Represents hero info game component
+ */
 internal class HeroInfo(
         position: Position,
         size: Size,

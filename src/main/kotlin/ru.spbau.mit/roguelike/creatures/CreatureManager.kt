@@ -7,6 +7,9 @@ import java.util.*
 import kotlin.math.ceil
 import kotlin.math.roundToInt
 
+/**
+ * Creature manager, which handles some of creature actions and their existence in the game
+ */
 class CreatureManager(
         val hero: Hero,
         otherCreatures: Map<Position,Set<Creature>>,
@@ -14,11 +17,21 @@ class CreatureManager(
 ) {
     private val internalCreatures: MutableMap<Position,MutableSet<Creature>>
 
+    /**
+     * Structure used to determine creatures in a specific cell
+     */
     val creatures: Map<Position,Set<Creature>>
         get() = internalCreatures
 
+    /**
+     * Hero position
+     */
     var heroPosition: Position
         private set
+
+    /**
+     * Is hero still in game
+     */
     var heroAlive: Boolean = true
         private set
 
@@ -39,9 +52,20 @@ class CreatureManager(
         heroPosition = gameMap.entrance
     }
 
+    /**
+     * Convenience [] operator getting creatures from a specific cell
+     * @param position to get
+     * @return creature in this Position
+     */
     operator fun get(position: Position): Set<Creature> =
             internalCreatures[position] ?: emptySet()
 
+    /**
+     * Processes Move creature action
+     * @param creature moving creature
+     * @param position creature position (so we don't have to search for it)
+     * @param direction move direction
+     */
     fun processMove(
             creature: Creature,
             position: Position,
@@ -66,6 +90,14 @@ class CreatureManager(
         }
     }
 
+    /**
+     * Processes Attack creature action
+     * @param attacker attacking creature
+     * @param position position of the attacker
+     * @param direction direction of the attack
+     * @param attacked attacked creature
+     * @return boolean value representing whether the attacked creature has died or not
+     */
     fun processAttack(
             attacker: Creature,
             position: Position,

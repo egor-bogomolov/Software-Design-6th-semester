@@ -11,10 +11,14 @@ import org.codetome.zircon.api.screen.Screen
 import ru.spbau.mit.roguelike.map.GameMap
 import ru.spbau.mit.roguelike.runner.GameRunner
 
+/**
+ * Internal alias to distinguish map.Position from Zircon's internal Position
+ */
+private typealias GameMapPosition = ru.spbau.mit.roguelike.map.Position
 
-
-typealias GameMapPosition = ru.spbau.mit.roguelike.map.Position
-
+/**
+ * Represents game field
+ */
 internal class GameField(
         position: Position,
         size: Size,
@@ -32,6 +36,9 @@ internal class GameField(
             .size(imageSize)
             .build()
 
+    /**
+     * Position of hero on the screen
+     */
     val offset: GameMapPosition
         get() =
             GameMapPosition(
@@ -53,6 +60,9 @@ internal class GameField(
         refresh()
     }
 
+    /**
+     * (Re-)loads map to screen
+     */
     private fun loadMap() {
         val gameMap: GameMap = gameRunner.heroVisibleMap()
 
@@ -71,6 +81,9 @@ internal class GameField(
         }
     }
 
+    /**
+     * (Re-)loads creatures to screen
+     */
     private fun loadCreatures() {
         for ((position, creatures) in gameRunner.creatureManager.creatures) {
             val fieldGameMapPosition = GameMapPosition(
@@ -99,6 +112,9 @@ internal class GameField(
         }
     }
 
+    /**
+     * Refreshes game field contents
+     */
     override fun refresh() {
         loadMap()
         loadCreatures()

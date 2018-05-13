@@ -10,6 +10,9 @@ import ru.spbau.mit.roguelike.ui.cli.CLIGameUI
 import java.util.function.Consumer
 import kotlin.coroutines.experimental.Continuation
 
+/**
+ * @see ru.spbau.mit.roguelike.ui.GameUI.showResults
+ */
 internal fun CLIGameUI.setupResultsScreen(
         gameRunner: GameRunner,
         newGameForwarder: Continuation<Boolean>

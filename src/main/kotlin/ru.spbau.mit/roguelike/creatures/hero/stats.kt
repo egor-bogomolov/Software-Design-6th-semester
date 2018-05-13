@@ -1,5 +1,8 @@
 package ru.spbau.mit.roguelike.creatures.hero
 
+/**
+ * Represents basic hero stats
+ */
 class BasicStats(
         stats: Map<Type,Int> = emptyMap()
 ): Iterable<Map.Entry<BasicStats.Type,Int>> {
@@ -8,18 +11,37 @@ class BasicStats(
 
     private val stats = stats.toMutableMap()
 
+    /**
+     * Possible hero stats
+     */
     enum class Type {
         STRENGTH,
         AGILITY,
         DAMAGE
     }
 
+    /**
+     * Gets hero stat value
+     * @param type stat type to get
+     * @return stat value or 0 if it is not defined
+     */
     operator fun get(type: Type) = stats[type] ?: 0
 
+    /**
+     * Sets hero stat value
+     * @param type stat type to set
+     * @param newValue new stat value
+     */
     internal operator fun set(type: Type, newValue: Int) {
         stats[type] = newValue
     }
 
+    /**
+     * Adds stat to another
+     * @param other stats to add
+     * @return BasicStats object which stat values are sums of corresponding
+     * stat values in both stats
+     */
     operator fun plus(other: BasicStats): BasicStats =
             BasicStats(
                     other.stats.entries.fold(
@@ -37,19 +59,34 @@ class BasicStats(
     }
 }
 
+/**
+ * Represents all possible hero stats
+ */
 class HeroStats(
         val baseMaxHealth: Float,
         val baseDamage: Float
 ) {
+    /**
+     * Hero level
+     */
     var level = 1
         internal set
 
+    /**
+     * Hero experience
+     */
     var experience: Int = 0
         internal set
 
+    /**
+     * Hero base basic stats
+     */
     var basicStats: BasicStats = BasicStats()
         internal set
 
+    /**
+     * Unspent stat points which are used to upgrade basic stats
+     */
     var unspentStatPoints: Int = 0
         internal set
 
@@ -59,6 +96,9 @@ class HeroStats(
     }
 }
 
+/**
+ * Represents an entity which can receive experience and upgrade stats
+ */
 internal interface StatManager {
     fun receiveExperience(received: Int): Boolean
     fun spendStatPoint(statToUpgrade: BasicStats.Type)

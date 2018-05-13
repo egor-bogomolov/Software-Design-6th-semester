@@ -12,6 +12,9 @@ import ru.spbau.mit.roguelike.ui.cli.CLIGameUI
 import ru.spbau.mit.roguelike.ui.cli.setup.field.GameScreenComponent
 import ru.spbau.mit.roguelike.ui.cli.setup.field.ItemViewer
 
+/**
+ * @see ru.spbau.mit.roguelike.creatures.hero.Hero.exchangeItems
+ */
 internal fun CLIGameUI.setupItemExchangeDialog(
         items: MutableList<Item>,
         returnToScreen: Screen,

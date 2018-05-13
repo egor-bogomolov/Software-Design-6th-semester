@@ -19,13 +19,24 @@ import java.util.function.Consumer
 import kotlin.math.max
 import kotlin.math.min
 
+/**
+ * Currently active screen
+ */
 private var activeScreenId: UUID? = null
 
+/**
+ * Activates current screen
+ */
 fun Screen.activate() {
     activeScreenId = getId()
     display()
 }
 
+/**
+ * Adds input listener with regard to current active screen
+ * (used to mitigate Zircon's strange behaviour of sending events to inactive screens)
+ * @param body of handler
+ */
 fun Screen.ifActiveOnInput(
         body: (Input) -> Unit
 ) = onInput(Consumer { input ->
@@ -34,6 +45,10 @@ fun Screen.ifActiveOnInput(
     }
 })
 
+/**
+ * Represents mouse event handler which processes events one at a given time span
+ * (used to mitigate Zircon's strange multiple event sending)
+ */
 internal class MouseEventHandler(
         private val body: (MouseAction) -> Unit
 ): Consumer<MouseAction> {
@@ -58,6 +73,13 @@ internal class MouseEventHandler(
     }
 }
 
+/**
+ * Produces a layer with information about specific item
+ * @param lineWidth width of a line
+ * @param position position of main layer contents
+ * @param item to write info about
+ * @return constructed layer
+ */
 internal fun itemInfoLayer(
         lineWidth: Int,
         position: Position,
@@ -90,6 +112,15 @@ internal val panelTemplate = PanelBuilder
         .wrapWithBox()
         .wrapWithShadow()
 
+/**
+ * Sets up a panel with number input inside a certain range
+ * @param screen to add panel to
+ * @param position of the panel
+ * @param title of the panel
+ * @param minValue minimum value
+ * @param maxValue maximum value
+ * @return pair of constructed panel and current value getter
+ */
 internal fun setupNumberPanel(
         screen: Screen,
         position: Position,

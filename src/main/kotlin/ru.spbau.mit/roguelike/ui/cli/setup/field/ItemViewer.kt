@@ -15,6 +15,9 @@ import ru.spbau.mit.roguelike.ui.cli.setup.itemInfoLayer
 import kotlin.math.max
 import kotlin.math.min
 
+/**
+ * Represents game component for viewing items
+ */
 internal class ItemViewer(
         position: Position,
         size: Size,

@@ -13,6 +13,9 @@ import ru.spbau.mit.roguelike.runner.GameRunner
 import ru.spbau.mit.roguelike.ui.cli.setup.MouseEventHandler
 import ru.spbau.mit.roguelike.ui.cli.setup.itemInfoLayer
 
+/**
+ * Represents hero equipment component
+ */
 internal class HeroEquipment(
         position: Position,
         size: Size,

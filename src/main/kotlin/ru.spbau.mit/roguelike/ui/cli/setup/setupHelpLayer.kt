@@ -7,6 +7,12 @@ import org.codetome.zircon.api.builder.TextCharacterBuilder
 import org.codetome.zircon.api.builder.TextImageBuilder
 import org.codetome.zircon.api.graphics.Layer
 
+/**
+ * Sets up layer containing game field key bindings
+ * @param position of layer
+ * @param maximumSize of layer
+ * @return constructed layer
+ */
 internal fun setupHelpLayer(
         position: Position,
         maximumSize: Size
