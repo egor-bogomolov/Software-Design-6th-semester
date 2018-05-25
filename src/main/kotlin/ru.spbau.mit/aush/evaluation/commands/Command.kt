@@ -34,7 +34,8 @@ abstract class Command {
                 "pwd" to PwdCommand,
                 "exit" to ExitCommand,
                 "grep" to GrepCommand,
-                "cd" to CdCommand
+                "cd" to CdCommand,
+                "ls" to LsCommand
         )
     }
 }
