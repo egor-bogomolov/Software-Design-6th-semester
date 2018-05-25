@@ -34,16 +34,22 @@ internal object LsCommand : Command() {
         val output = PrintStream(environment.io.output)
 
         if (files.isNotEmpty()) {
-            output.println(files.joinToString(separator = " "){ it.name })
+            output.println(files.sortedBy { it.name }.joinToString(separator = " ") { it.name })
         }
 
-        directories.forEach {
-            if (directories.size > 1 || files.isNotEmpty()) {
-                output.println()
-                output.println("${it.relativeTo(environment.currentDir.toFile())}:")
-            }
-            output.println(it.listFiles().joinToString(separator = " ") { file -> file.name })
-        }
+        directories
+                .sortedBy { it.name }
+                .forEach {
+                    if (directories.size > 1 || files.isNotEmpty()) {
+                        output.println()
+                        output.println("${it.relativeTo(environment.currentDir.toFile())}:")
+                    }
+                    output.println(
+                            it.listFiles()
+                                    .sortedBy { file -> file.name }
+                                    .joinToString(separator = " ") { file -> file.name }
+                    )
+                }
     }
 
 }

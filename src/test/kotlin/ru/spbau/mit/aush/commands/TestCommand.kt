@@ -16,11 +16,13 @@ abstract class TestCommand(name: String) {
             arguments: List<String>,
             environment: Environment,
             expectedOutput: String,
-            expectedErrorOutput: String = ""
+            expectedErrorOutput: String = "",
+            expectedDir: Path
     ) {
         command.evaluate(arguments, environment)
         assertEquals(expectedOutput, environment.io.output.toString())
         assertEquals(expectedErrorOutput, environment.io.error.toString())
+        assertEquals(expectedDir, environment.currentDir)
     }
 
     fun runTest(
@@ -28,7 +30,8 @@ abstract class TestCommand(name: String) {
             expectedOutput: String,
             input: String = "",
             expectedErrorOutput: String = "",
-            currentDir: Path = Paths.get(System.getProperty("user.dir"))
+            currentDir: Path = Paths.get(System.getProperty("user.dir")),
+            expectedDir: Path = Paths.get(System.getProperty("user.dir"))
     ) = runTest(
             arguments,
             Environment(
@@ -41,6 +44,7 @@ abstract class TestCommand(name: String) {
                     currentDir
             ),
             expectedOutput,
-            expectedErrorOutput
+            expectedErrorOutput,
+            expectedDir
     )
 }
