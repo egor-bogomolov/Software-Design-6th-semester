@@ -59,7 +59,10 @@ internal object GrepCommand : Command() {
         val streamsToSearch = if (parsedArgs.files.isEmpty()) {
             listOf(Pair("", environment.io.input))
         } else {
-            parsedArgs.files.map { Pair(File(it).name + ":", File(it).inputStream()) }
+            parsedArgs.files.map {
+                val file = environment.currentDir.resolve(it).toFile()
+                Pair(file.name + ":", file.inputStream())
+            }
         }
 
         val output = PrintStream(environment.io.output)

@@ -24,7 +24,7 @@ internal object CatCommand : Command() {
             val printStream = PrintStream(environment.io.output)
 
             for (fileName in args) {
-                File(fileName).inputStream().copyTo(environment.io.output)
+                environment.currentDir.resolve(fileName).toFile().inputStream().copyTo(environment.io.output)
                 printStream.println()
             }
         }
