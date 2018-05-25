@@ -1,5 +1,7 @@
 package ru.spbau.mit.aush.evaluation
 
+import java.io.File
+
 /**
  * Represents exceptions occurred in evaluation process
  */
@@ -8,7 +10,7 @@ sealed class EvaluationException(
         cause: Throwable? = null) : Exception(message, cause)
 
 /**
- * Represents an cause in evaluation of a specific command
+ * Represents a cause in evaluation of a specific command
  */
 class CommandEvaluationFailedException(
         command: String,
@@ -20,3 +22,9 @@ class CommandEvaluationFailedException(
         """.trimMargin(),
         cause
 )
+
+class TooManyArgumentsException(expected: Int, got: Int): Exception("Too many arguments, expected: $expected, got: $got")
+
+class FileNotExistException(file: File): Exception("File $file doesn't exist")
+
+class NotDirectoryException(file: File): Exception("File $file isn't a directory")

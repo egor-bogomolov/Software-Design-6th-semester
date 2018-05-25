@@ -70,5 +70,5 @@ data class EnvironmentIO(
 data class Environment(
         val variables: EnvironmentVariables,
         val io: EnvironmentIO,
-        val currentDir: Path = Paths.get(System.getProperty("user.dir"))
+        var currentDir: Path = Paths.get(System.getProperty("user.dir"))
 )
