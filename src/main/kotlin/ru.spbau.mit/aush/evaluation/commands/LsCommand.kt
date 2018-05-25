@@ -7,7 +7,7 @@ import java.io.PrintStream
 
 /**
  * Represents simplified version of `ls` Bash command
- * For each of its arguments prints a list of files in corresponding directory
+ * For each of its arguments prints a list of files in corresponding directory or a filename if a file was provided
  * If no arguments provided then it's done for current directory
  */
 internal object LsCommand : Command() {
