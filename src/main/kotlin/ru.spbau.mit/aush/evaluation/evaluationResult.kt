@@ -1,5 +1,7 @@
 package ru.spbau.mit.aush.evaluation
 
+import java.nio.file.Path
+
 /**
  * Represents result of command evaluation
  */
@@ -10,7 +12,8 @@ sealed class EvaluationResult
  * contains updated environment variables
  */
 class EvaluationSuccess(
-        val modifiedEnvironmentVariables: EnvironmentVariables
+        val modifiedEnvironmentVariables: EnvironmentVariables,
+        val resultingDirectory: Path
 ) : EvaluationResult()
 
 /**

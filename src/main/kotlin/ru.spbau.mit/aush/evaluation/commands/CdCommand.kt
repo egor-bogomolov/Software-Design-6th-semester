@@ -15,7 +15,7 @@ internal object CdCommand : Command() {
         when(args.size) {
             0 -> {}
             1 ->  {
-                val targetDirectory = environment.currentDir.resolve(args[0]).toFile()
+                val targetDirectory = environment.currentDir.resolve(args[0]).normalize().toFile()
                 if (!targetDirectory.exists()) {
                     throw FileNotExistException(targetDirectory)
                 }

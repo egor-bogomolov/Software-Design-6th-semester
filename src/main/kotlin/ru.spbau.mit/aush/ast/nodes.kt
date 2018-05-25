@@ -62,7 +62,7 @@ data class CommandNode(
                         args.map { it.interpolate(environment.variables) },
                         environment
                 )
-                EvaluationSuccess(EnvironmentVariables.emptyVariables)
+                EvaluationSuccess(EnvironmentVariables.emptyVariables, environment.currentDir)
             }
         } catch (throwable: Throwable) {
             EvaluationFailure(
@@ -110,7 +110,7 @@ data class PipeNode(
         ))
         return when(resultRight) {
             is EvaluationSuccess ->
-                EvaluationSuccess(EnvironmentVariables.emptyVariables)
+                EvaluationSuccess(EnvironmentVariables.emptyVariables, environment.currentDir)
             is EvaluationFailure -> EvaluationFailure(
                     "| ${resultRight.command}",
                     CommandEvaluationFailedException(
@@ -155,5 +155,5 @@ data class DefineVariableNode(
  */
 object EmptyNode : ASTNode() {
     override fun evaluate(environment: Environment): EvaluationSuccess =
-            EvaluationSuccess(environment.variables)
+            EvaluationSuccess(environment.variables, environment.currentDir)
 }
