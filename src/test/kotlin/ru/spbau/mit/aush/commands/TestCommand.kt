@@ -5,6 +5,8 @@ import ru.spbau.mit.aush.evaluation.EnvironmentIO
 import ru.spbau.mit.aush.evaluation.EnvironmentVariables
 import ru.spbau.mit.aush.evaluation.commands.Command
 import java.io.ByteArrayOutputStream
+import java.nio.file.Path
+import java.nio.file.Paths
 import kotlin.test.assertEquals
 
 abstract class TestCommand(name: String) {
@@ -25,7 +27,8 @@ abstract class TestCommand(name: String) {
             arguments: List<String>,
             expectedOutput: String,
             input: String = "",
-            expectedErrorOutput: String = ""
+            expectedErrorOutput: String = "",
+            currentDir: Path = Paths.get(System.getProperty("user.dir"))
     ) = runTest(
             arguments,
             Environment(
@@ -34,7 +37,8 @@ abstract class TestCommand(name: String) {
                             input.byteInputStream(),
                             ByteArrayOutputStream(),
                             ByteArrayOutputStream()
-                    )
+                    ),
+                    currentDir
             ),
             expectedOutput,
             expectedErrorOutput

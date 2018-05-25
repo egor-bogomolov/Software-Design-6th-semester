@@ -6,6 +6,8 @@ import ru.spbau.mit.aush.evaluation.EnvironmentVariables
 import ru.spbau.mit.aush.lexer.Word
 import ru.spbau.mit.aush.lexer.WordPart
 import java.io.ByteArrayOutputStream
+import java.nio.file.Path
+import java.nio.file.Paths
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -48,7 +50,8 @@ class TestNodes {
             astNode: ASTNode,
             expectedOutput: String,
             input: String = "",
-            expectedErrorOutput: String = ""
+            expectedErrorOutput: String = "",
+            currentDir: Path = Paths.get(System.getProperty("user.dir"))
     ) = runTest(
             astNode,
             Environment(
@@ -57,7 +60,8 @@ class TestNodes {
                             input.byteInputStream(),
                             ByteArrayOutputStream(),
                             ByteArrayOutputStream()
-                    )
+                    ),
+                    currentDir
             ),
             expectedOutput,
             expectedErrorOutput
