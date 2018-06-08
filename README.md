@@ -56,3 +56,15 @@ Represented by `ASTNode`s which have method `evaluate(environment)`. Its subclas
 ### CLI argument parse library
 
 I chose xenomachina/kotlin-argparser, [because ...](GrepArgparseLibraryChoiceExplained.md)
+
+# HW04 AUsh::cd&ls
+
+## cd command implementation over AUsh
+
+- changes directory
+- 0 or 1 argument
+
+## ls command implementation over AUsh
+
+- support of multiple arguments
+- both files and directories

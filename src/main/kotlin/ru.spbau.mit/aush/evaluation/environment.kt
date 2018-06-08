@@ -2,6 +2,8 @@ package ru.spbau.mit.aush.evaluation
 
 import java.io.InputStream
 import java.io.OutputStream
+import java.nio.file.Path
+import java.nio.file.Paths
 
 /**
  * Represents environment variables
@@ -67,5 +69,6 @@ data class EnvironmentIO(
  */
 data class Environment(
         val variables: EnvironmentVariables,
-        val io: EnvironmentIO
+        val io: EnvironmentIO,
+        var currentDir: Path
 )

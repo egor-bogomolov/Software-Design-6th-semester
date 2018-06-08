@@ -17,6 +17,7 @@ internal class ExternalCommand(private val name: String) : Command() {
     ) {
         val subProcessBuilder = ProcessBuilder(listOf(name) + args)
         subProcessBuilder.environment()?.putAll(environment.variables.data)
+        subProcessBuilder.directory(environment.currentDir.toFile())
 
         val subProcess = subProcessBuilder.start()
         val subInput = subProcess.inputStream

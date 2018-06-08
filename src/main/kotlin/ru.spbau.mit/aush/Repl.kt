@@ -5,6 +5,8 @@ import ru.spbau.mit.aush.evaluation.*
 import ru.spbau.mit.aush.lexer.*
 import ru.spbau.mit.aush.parser.CommandListParser
 import java.io.PrintStream
+import java.nio.file.Path
+import java.nio.file.Paths
 
 /**
  * Represents the shell running with given streams
@@ -17,6 +19,8 @@ class Repl(
     private val output = PrintStream(environmentIO.output)
 
     private var environmentVariables = EnvironmentVariables.emptyVariables
+
+    private var currentDirectory: Path = Paths.get(System.getProperty("user.dir"))
 
     private fun greet() =
             output.println("Welcome to AUsh (Academic University SHell)")
@@ -49,11 +53,12 @@ class Repl(
         try {
             val command = readCommand() ?: return
             val result = command.evaluate(
-                    Environment(environmentVariables, environmentIO)
+                    Environment(environmentVariables, environmentIO, currentDirectory)
             )
             when (result) {
                 is EvaluationSuccess -> {
                     environmentVariables += result.modifiedEnvironmentVariables
+                    currentDirectory = result.resultingDirectory
                 }
                 SuccessfullyExited -> return
                 is EvaluationFailure ->

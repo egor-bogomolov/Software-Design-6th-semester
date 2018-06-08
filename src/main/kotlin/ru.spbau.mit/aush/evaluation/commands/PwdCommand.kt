@@ -16,6 +16,6 @@ internal object PwdCommand : Command() {
             args: List<String>,
             environment: Environment
     ) {
-        PrintStream(environment.io.output).println(System.getProperty("user.dir"))
+        PrintStream(environment.io.output).println(environment.currentDir)
     }
 }
